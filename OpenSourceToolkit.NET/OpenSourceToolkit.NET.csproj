@@ -72,7 +72,7 @@
     </PackageReference>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="DnsClient" Version="1.8.0" />
-    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.9.1" />
+    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.10.0" />
     <PackageReference Include="OpenCvSharp4" Version="4.11.0.20250507" />
     <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.11.0.20250507" />
     <PackageReference Include="System.Text.Json" Version="10.0.0" />
