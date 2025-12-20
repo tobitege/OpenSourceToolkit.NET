@@ -3,6 +3,9 @@ name: CI Build
 # Builds on every commit to verify everything compiles.
 # Does NOT publish anything - just verification.
 
+permissions:
+  contents: read
+
 on:
   push:
     branches:
