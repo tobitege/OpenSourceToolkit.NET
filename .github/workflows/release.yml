@@ -19,6 +19,8 @@ on:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       version: ${{ steps.validate.outputs.version }}
       tag: ${{ steps.validate.outputs.tag }}
@@ -38,6 +40,8 @@ jobs:
   build-desktop:
     needs: validate
     runs-on: windows-latest
+    permissions:
+      contents: read
 
     steps:
       - uses: actions/checkout@v4
