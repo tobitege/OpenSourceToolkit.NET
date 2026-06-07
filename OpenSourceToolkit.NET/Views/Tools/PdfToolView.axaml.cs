@@ -1,4 +1,4 @@
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
@@ -97,7 +97,7 @@ namespace OpenSourceToolkit.NET.Views.Tools
             var nameTextBox = new DaisyInput
             {
                 Text = currentName,
-                Watermark = "Enter preset name...",
+                PlaceholderText = "Enter preset name...",
                 Margin = new Thickness(0, 8, 0, 0)
             };
 

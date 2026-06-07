@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenSourceToolkit.IO;
@@ -39,11 +39,10 @@ namespace OpenSourceToolkit.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(DirectoryNotFoundException))]
         public void FolderAnalyzer_Analyze_NonExistingDirectory_Throws()
         {
             string nonExisting = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
-            FolderAnalyzer.Analyze(nonExisting);
+            Assert.Throws<DirectoryNotFoundException>(() => FolderAnalyzer.Analyze(nonExisting));
         }
     }
 }

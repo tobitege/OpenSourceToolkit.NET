@@ -6,11 +6,11 @@
 
   <ItemGroup>
     <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.13.1" />
-    <PackageReference Include="OpenCvSharp4" Version="4.13.0.20260427" />
-    <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.13.0.20260302" />
-    <PackageReference Include="System.Drawing.Common" Version="10.0.7" />
-    <PackageReference Include="System.Text.Json" Version="10.0.7" />
-    <PackageReference Include="YamlDotNet" Version="16.3.0" />
+    <PackageReference Include="OpenCvSharp4" Version="4.13.0.20260528" />
+    <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.13.0.20260528" />
+    <PackageReference Include="System.Drawing.Common" Version="10.0.8" />
+    <PackageReference Include="System.Text.Json" Version="10.0.8" />
+    <PackageReference Include="YamlDotNet" Version="18.0.0" />
   </ItemGroup>
 
   <PropertyGroup>

@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:OpenSourceToolkit.NET.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -143,7 +143,7 @@
 
                                 <daisy:DaisyInput Text="{Binding GitHubToken}"
                                          PasswordChar="•"
-                                         Watermark="ghp_xxxxxxxxxxxxxxxxxxxx"
+                                         PlaceholderText="ghp_xxxxxxxxxxxxxxxxxxxx"
                                          HorizontalAlignment="Stretch"/>
 
                                 <TextBlock TextWrapping="Wrap" FontSize="11" Foreground="{DynamicResource DaisyBaseContentBrush}">
@@ -266,7 +266,7 @@
                                     <TextBlock Grid.Row="0" Grid.Column="0" Text="{loc:Localize Settings_Connections_Name}" VerticalAlignment="Center"
                                                Foreground="{DynamicResource DaisyBaseContentBrush}"/>
                                     <daisy:DaisyInput Grid.Row="0" Grid.Column="1" Text="{Binding EditConnectionName}"
-                                             Watermark="{loc:Localize Settings_Connections_NameWatermark}" HorizontalAlignment="Stretch"/>
+                                             PlaceholderText="{loc:Localize Settings_Connections_NameWatermark}" HorizontalAlignment="Stretch"/>
 
                                     <!-- Provider -->
                                     <TextBlock Grid.Row="1" Grid.Column="0" Text="{loc:Localize Settings_Connections_Provider}" VerticalAlignment="Center"
@@ -292,7 +292,7 @@
                                         <daisy:DaisyButton Content="{loc:Localize Settings_Connections_OverrideApiKey}" Command="{Binding ShowCustomApiKeyCommand}"
                                                 IsVisible="{Binding !EditShowCustomApiKey}" HorizontalAlignment="Left"/>
                                         <daisy:DaisyInput Text="{Binding EditCustomApiKey}" PasswordChar="•"
-                                                 Watermark="{loc:Localize Settings_Connections_CustomApiKeyWatermark}"
+                                                 PlaceholderText="{loc:Localize Settings_Connections_CustomApiKeyWatermark}"
                                                  IsVisible="{Binding EditShowCustomApiKey}"
                                                  HorizontalAlignment="Stretch"/>
                                     </StackPanel>
@@ -421,13 +421,13 @@
 
                                 <daisy:DaisyInput Text="{Binding SelectedProviderApiKey.ApiKey}"
                                          PasswordChar="•"
-                                         Watermark="{loc:Localize Settings_Providers_ApiKeyWatermark}"
+                                         PlaceholderText="{loc:Localize Settings_Providers_ApiKeyWatermark}"
                                          HorizontalAlignment="Stretch"/>
 
                                 <TextBlock Text="{loc:Localize Settings_Providers_Endpoint}" FontWeight="Medium" Margin="0,8,0,0"
                                            Foreground="{DynamicResource DaisyBaseContentBrush}"/>
                                 <daisy:DaisyInput Text="{Binding SelectedProviderApiKey.CustomEndpoint}"
-                                         Watermark="{loc:Localize Settings_Providers_EndpointWatermark}"
+                                         PlaceholderText="{loc:Localize Settings_Providers_EndpointWatermark}"
                                          HorizontalAlignment="Stretch"/>
 
                                 <!-- Test Connection -->
@@ -466,7 +466,7 @@
                             <!-- Add Model -->
                             <Grid Grid.Row="3" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
                                 <daisy:DaisyInput Grid.Column="0" Text="{Binding NewModelName}"
-                                         Watermark="{loc:Localize Settings_Providers_NewModelWatermark}" Margin="0,0,8,0"/>
+                                         PlaceholderText="{loc:Localize Settings_Providers_NewModelWatermark}" Margin="0,0,8,0"/>
                                 <daisy:DaisyButton Grid.Column="1" Command="{Binding AddModelCommand}">
                                     <StackPanel Orientation="Horizontal" Spacing="4">
                                         <materialIcons:MaterialIcon Kind="Plus" Width="16" Height="16"/>

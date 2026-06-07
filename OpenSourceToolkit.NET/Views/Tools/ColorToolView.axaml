@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:OpenSourceToolkit.NET.ViewModels.Tools"
              xmlns:controls="using:OpenSourceToolkit.NET.Controls"
@@ -48,7 +48,7 @@
                             <!-- Hex Value -->
                             <StackPanel>
                                 <TextBlock Text="{loc:Localize Color_HexValue_Label}" Classes="Label"/>
-                                <daisy:DaisyInput Name="HexInputBox" Text="{Binding Hex}" Watermark="#RRGGBB" MinWidth="120">
+                                <daisy:DaisyInput Name="HexInputBox" Text="{Binding Hex}" PlaceholderText="#RRGGBB" MinWidth="120">
                                     <daisy:DaisyInput.KeyBindings>
                                         <KeyBinding Gesture="Enter" Command="{Binding UpdateFromHexInputCommand}" CommandParameter="{Binding #HexInputBox.Text}"/>
                                     </daisy:DaisyInput.KeyBindings>

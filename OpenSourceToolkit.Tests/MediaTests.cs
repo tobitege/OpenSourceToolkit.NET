@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenSourceToolkit.Media;
@@ -34,7 +34,7 @@ namespace OpenSourceToolkit.Tests
             try
             {
                 // We verify the method structure is in place by checking FileNotFound behavior
-                Assert.ThrowsException<FileNotFoundException>(() =>
+                Assert.Throws<FileNotFoundException>(() =>
                     AsciiArtGenerator.ConvertTextToAscii("Test", "non_existent.flf"));
             }
             finally
@@ -71,7 +71,7 @@ namespace OpenSourceToolkit.Tests
             {
                 File.WriteAllText(flfPath, "dummy");
 
-                Assert.ThrowsException<NotImplementedException>(() =>
+                Assert.Throws<NotImplementedException>(() =>
                     AsciiArtGenerator.ConvertTextToAscii("Test", flfPath));
             }
             finally

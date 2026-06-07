@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:OpenSourceToolkit.NET.ViewModels.Tools"
              xmlns:controls="using:OpenSourceToolkit.NET.Controls"
@@ -8,7 +8,7 @@
              x:DataType="vm:DnsToolViewModel">
     <StackPanel Spacing="10">
         <StackPanel Orientation="Horizontal" Spacing="10">
-            <daisy:DaisyInput Text="{Binding Domain}" Watermark="{loc:Localize Dns_Domain_Watermark}" Width="300" />
+            <daisy:DaisyInput Text="{Binding Domain}" PlaceholderText="{loc:Localize Dns_Domain_Watermark}" Width="300" />
             <daisy:DaisyButton Command="{Binding LookupCommand}" Content="{loc:Localize Dns_Lookup_Button}" Variant="Primary" />
         </StackPanel>
 

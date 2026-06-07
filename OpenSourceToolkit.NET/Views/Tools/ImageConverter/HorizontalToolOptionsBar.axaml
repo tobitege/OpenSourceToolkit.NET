@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -125,11 +125,11 @@
 
                     <TextBlock Text="W:"/>
                     <NumericUpDown Value="{Binding Workspace.ResizeWidth}" Minimum="1" Maximum="10000"
-                                   FormatString="0" Watermark="Auto" Width="75"/>
+                                   FormatString="0" PlaceholderText="Auto" Width="75"/>
 
                     <TextBlock Text="H:"/>
                     <NumericUpDown Value="{Binding Workspace.ResizeHeight}" Minimum="1" Maximum="10000"
-                                   FormatString="0" Watermark="Auto" Width="75"/>
+                                   FormatString="0" PlaceholderText="Auto" Width="75"/>
 
                     <ToggleButton IsChecked="{Binding Workspace.MaintainAspectRatio}"
                                   ToolTip.Tip="Keep Aspect Ratio" Padding="6,4">
@@ -319,7 +319,7 @@
                     <TextBlock Text="Watermark" FontWeight="SemiBold"/>
                     <Border Width="1" Background="{DynamicResource DaisyBase300Brush}" Margin="4,2"/>
                     <TextBlock Text="Text:"/>
-                    <TextBox Text="{Binding Workspace.WatermarkText}" Watermark="© Your Name" Width="120" Padding="4,3"/>
+                    <TextBox Text="{Binding Workspace.WatermarkText}" PlaceholderText="© Your Name" Width="120" Padding="4,3"/>
 
                     <Button Command="{Binding Workspace.LoadWatermarkImageCommand}" Content="Image" Padding="6,4"
                             ToolTip.Tip="Load watermark image"/>
@@ -355,7 +355,7 @@
                                     </Grid>
                                     <Grid ColumnDefinitions="60,*">
                                         <TextBlock Text="Color"/>
-                                        <TextBox Grid.Column="1" Text="{Binding Workspace.WatermarkColor}" Watermark="#FFFFFF"/>
+                                        <TextBox Grid.Column="1" Text="{Binding Workspace.WatermarkColor}" PlaceholderText="#FFFFFF"/>
                                     </Grid>
                                     <Grid ColumnDefinitions="60,*,35">
                                         <TextBlock Text="Padding"/>

@@ -1,4 +1,4 @@
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -417,7 +417,7 @@ namespace OpenSourceToolkit.NET.Views.Tools
             {
                 Text = currentName,
                 MaxLength = ImageConverterToolViewModel.MaxSessionNameLength,
-                Watermark = "Enter session name...",
+                PlaceholderText = "Enter session name...",
                 Height = 32,
                 FontSize = 14,
                 VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Center

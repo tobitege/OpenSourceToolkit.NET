@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -20,15 +20,15 @@
                     <StackPanel Spacing="10">
                         <StackPanel Spacing="4">
                             <TextBlock Text="{loc:Localize Privacy_CompanyName_Label}"/>
-                            <TextBox Text="{Binding CompanyName}" Watermark="{loc:Localize Privacy_CompanyName_Watermark}"/>
+                            <TextBox Text="{Binding CompanyName}" PlaceholderText="{loc:Localize Privacy_CompanyName_Watermark}"/>
                         </StackPanel>
                         <StackPanel Spacing="4">
                             <TextBlock Text="{loc:Localize Privacy_WebsiteUrl_Label}"/>
-                            <TextBox Text="{Binding WebsiteUrl}" Watermark="https://example.com"/>
+                            <TextBox Text="{Binding WebsiteUrl}" PlaceholderText="https://example.com"/>
                         </StackPanel>
                         <StackPanel Spacing="4">
                             <TextBlock Text="{loc:Localize Privacy_ContactEmail_Label}"/>
-                            <TextBox Text="{Binding ContactEmail}" Watermark="privacy@example.com"/>
+                            <TextBox Text="{Binding ContactEmail}" PlaceholderText="privacy@example.com"/>
                         </StackPanel>
                     </StackPanel>
                 </Border>

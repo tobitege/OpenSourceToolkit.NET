@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:OpenSourceToolkit.NET.ViewModels.Tools"
              xmlns:controls="using:OpenSourceToolkit.NET.Controls"
@@ -8,10 +8,10 @@
              x:DataType="vm:HmacToolViewModel">
     <StackPanel Spacing="10">
         <TextBlock Text="{loc:Localize Hmac_Message_Label}" />
-        <daisy:DaisyInput Text="{Binding Input}" Watermark="{loc:Localize Hmac_Message_Watermark}" />
+        <daisy:DaisyInput Text="{Binding Input}" PlaceholderText="{loc:Localize Hmac_Message_Watermark}" />
 
         <TextBlock Text="{loc:Localize Hmac_Key_Label}" />
-        <daisy:DaisyInput Text="{Binding Key}" Watermark="{loc:Localize Hmac_Key_Watermark}" PasswordChar="*" />
+        <daisy:DaisyInput Text="{Binding Key}" PlaceholderText="{loc:Localize Hmac_Key_Watermark}" PasswordChar="*" />
 
         <daisy:DaisyButton Command="{Binding GenerateCommand}" Content="{loc:Localize Hmac_Generate_Button}" Variant="Primary" HorizontalAlignment="Left" />
 

@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:OpenSourceToolkit.NET.ViewModels.Tools"
              xmlns:controls="using:OpenSourceToolkit.NET.Controls"
@@ -8,7 +8,7 @@
              x:DataType="vm:FolderAnalyzerToolViewModel">
     <Grid RowDefinitions="Auto,Auto,*">
         <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10" Margin="0,0,0,10">
-            <TextBox Text="{Binding Path}" Watermark="{loc:Localize FolderAnalyzer_Path_Watermark}" Width="400" IsReadOnly="True" />
+            <TextBox Text="{Binding Path}" PlaceholderText="{loc:Localize FolderAnalyzer_Path_Watermark}" Width="400" IsReadOnly="True" />
             <daisy:DaisyButton Content="{loc:Localize FolderAnalyzer_Browse_Button}" Click="Browse_Click" IsEnabled="{Binding !IsAnalyzing}" />
             <daisy:DaisyButton Command="{Binding AnalyzeCommand}" Content="{loc:Localize FolderAnalyzer_Analyze_Button}" Variant="Primary" HorizontalAlignment="Left" />
             <daisy:DaisyButton Command="{Binding StopCommand}" Content="{loc:Localize FolderAnalyzer_Stop_Button}" Variant="Error" />

@@ -13,8 +13,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FIGLet" Version="1.1.0" />
-    <PackageReference Include="SkiaSharp" Version="3.119.2" />
+    <PackageReference Include="FIGLet" Version="2.0.14" />
+    <PackageReference Include="SkiaSharp" Version="3.119.4" />
   </ItemGroup>
 
 </Project>

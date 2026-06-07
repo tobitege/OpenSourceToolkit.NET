@@ -1,4 +1,4 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenSourceToolkit.Scheduling;
 using System;
 using System.Linq;
@@ -24,10 +24,9 @@ namespace OpenSourceToolkit.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(NCrontab.CrontabException))]
         public void CronScheduler_Parse_InvalidExpression_Throws()
         {
-            new CronScheduler("invalid cron", () => { });
+            Assert.Throws<NCrontab.CrontabException>(() => new CronScheduler("invalid cron", () => { }));
         }
 
         [TestMethod]
@@ -43,10 +42,9 @@ namespace OpenSourceToolkit.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(NCrontab.CrontabException))]
         public void CronScheduler_GetNextOccurrences_InvalidExpression_Throws()
         {
-            CronScheduler.GetNextOccurrences("invalid cron", 1);
+            Assert.Throws<NCrontab.CrontabException>(() => CronScheduler.GetNextOccurrences("invalid cron", 1));
         }
     }
 }

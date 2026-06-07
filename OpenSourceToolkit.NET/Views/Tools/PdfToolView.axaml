@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:OpenSourceToolkit.NET.ViewModels.Tools"
              xmlns:daisy="clr-namespace:Flowery.Controls;assembly=Flowery.NET"
@@ -34,7 +34,7 @@
 
                             <TextBlock Text="{loc:Localize Pdf_OutputFile_Label}" FontWeight="Bold"/>
                             <Grid ColumnDefinitions="*,Auto" ColumnSpan="2">
-                                <TextBox Text="{Binding MergeOutputFile}" Watermark="{loc:Localize Pdf_OutputPath_Watermark}" IsReadOnly="True"/>
+                                <TextBox Text="{Binding MergeOutputFile}" PlaceholderText="{loc:Localize Pdf_OutputPath_Watermark}" IsReadOnly="True"/>
                                 <daisy:DaisyButton Grid.Column="1" Content="{loc:Localize Pdf_SaveAs_Button}" Click="MergeSaveAs_Click" Margin="10,0,0,0"/>
                             </Grid>
 
@@ -49,13 +49,13 @@
 
                             <TextBlock Text="{loc:Localize Pdf_InputFile_Label}" FontWeight="Bold"/>
                             <Grid ColumnDefinitions="*,Auto">
-                                <TextBox Text="{Binding SplitInputFile}" Watermark="{loc:Localize Pdf_SelectPdfToSplit_Watermark}" IsReadOnly="True"/>
+                                <TextBox Text="{Binding SplitInputFile}" PlaceholderText="{loc:Localize Pdf_SelectPdfToSplit_Watermark}" IsReadOnly="True"/>
                                 <daisy:DaisyButton Grid.Column="1" Content="{loc:Localize Pdf_Browse_Button}" Click="SplitBrowseInput_Click" Margin="10,0,0,0"/>
                             </Grid>
 
                             <TextBlock Text="{loc:Localize Pdf_OutputDirectory_Label}" FontWeight="Bold"/>
                             <Grid ColumnDefinitions="*,Auto">
-                                <TextBox Text="{Binding SplitOutputDir}" Watermark="{loc:Localize Pdf_SelectOutputFolder_Watermark}" IsReadOnly="True"/>
+                                <TextBox Text="{Binding SplitOutputDir}" PlaceholderText="{loc:Localize Pdf_SelectOutputFolder_Watermark}" IsReadOnly="True"/>
                                 <daisy:DaisyButton Grid.Column="1" Content="{loc:Localize Pdf_Browse_Button}" Click="SplitBrowseOutput_Click" Margin="10,0,0,0"/>
                             </Grid>
 
@@ -71,13 +71,13 @@
                             <!-- Input/Output Files -->
                             <TextBlock Text="{loc:Localize Pdf_InputFile_Label}" FontWeight="Bold"/>
                             <Grid ColumnDefinitions="*,Auto">
-                                <TextBox Text="{Binding WatermarkInputFile}" Watermark="{loc:Localize Pdf_SelectPdf_Watermark}" IsReadOnly="True"/>
+                                <TextBox Text="{Binding WatermarkInputFile}" PlaceholderText="{loc:Localize Pdf_SelectPdf_Watermark}" IsReadOnly="True"/>
                                 <daisy:DaisyButton Grid.Column="1" Content="{loc:Localize Pdf_Browse_Button}" Click="WatermarkBrowseInput_Click" Margin="10,0,0,0"/>
                             </Grid>
 
                             <TextBlock Text="{loc:Localize Pdf_OutputFile_Label}" FontWeight="Bold"/>
                             <Grid ColumnDefinitions="*,Auto">
-                                <TextBox Text="{Binding WatermarkOutputFile}" Watermark="{loc:Localize Pdf_OutputPath_Watermark}" IsReadOnly="True"/>
+                                <TextBox Text="{Binding WatermarkOutputFile}" PlaceholderText="{loc:Localize Pdf_OutputPath_Watermark}" IsReadOnly="True"/>
                                 <daisy:DaisyButton Grid.Column="1" Content="{loc:Localize Pdf_SaveAs_Button}" Click="WatermarkSaveAs_Click" Margin="10,0,0,0"/>
                             </Grid>
 
@@ -110,7 +110,7 @@
 
                             <!-- Watermark Text -->
                             <TextBlock Text="{loc:Localize Pdf_WatermarkText_Label}" FontWeight="Bold"/>
-                            <daisy:DaisyInput Text="{Binding WatermarkText}" Watermark="{loc:Localize Pdf_WatermarkText_Watermark}"/>
+                            <daisy:DaisyInput Text="{Binding WatermarkText}" PlaceholderText="{loc:Localize Pdf_WatermarkText_Watermark}"/>
 
                             <!-- Position and Rotation Row -->
                             <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" Margin="0,5,0,0">

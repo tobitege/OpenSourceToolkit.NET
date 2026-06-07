@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:OpenSourceToolkit.NET.ViewModels.Tools"
              xmlns:daisy="clr-namespace:Flowery.Controls;assembly=Flowery.NET"
@@ -88,7 +88,7 @@
             <!-- Expression Input -->
             <StackPanel Spacing="5">
                 <TextBlock Text="{loc:Localize Cron_Expression_Label}" FontWeight="SemiBold" />
-                <daisy:DaisyInput Text="{Binding Expression}" Watermark="{loc:Localize Cron_Expression_Watermark}" FontFamily="Consolas,Monospace" />
+                <daisy:DaisyInput Text="{Binding Expression}" PlaceholderText="{loc:Localize Cron_Expression_Watermark}" FontFamily="Consolas,Monospace" />
                 <TextBlock Text="{Binding Error}" Foreground="{DynamicResource DaisyErrorBrush}"
                            IsVisible="{Binding Error, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
             </StackPanel>
