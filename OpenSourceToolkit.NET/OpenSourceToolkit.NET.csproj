@@ -1,10 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
-    <Version>0.2.3</Version>
-    <AssemblyVersion>0.2.3.0</AssemblyVersion>
-    <FileVersion>0.2.3.0</FileVersion>
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>disable</ImplicitUsings>
     <OutputPath Condition="'$(Configuration)'=='Debug'">..\bin\debug\</OutputPath>
@@ -50,10 +50,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="11.3.12" />
-    <PackageReference Include="Avalonia.Desktop" Version="11.3.12" />
-    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.12" />
-    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.12" />
+    <PackageReference Include="Avalonia" Version="12.0.4" />
+    <PackageReference Include="Avalonia.Desktop" Version="12.0.4" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.0.4" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="12.0.4" />
 
     <!-- Flowery.NET: Conditional reference (local project vs NuGet) -->
   </ItemGroup>
@@ -65,27 +65,27 @@
 
   <!-- Use NuGet package when UseLocalFlowery is false or not set -->
   <ItemGroup Condition="'$(UseLocalFlowery)' != 'true'">
-    <PackageReference Include="Flowery.NET" Version="1.9.2" />
+    <PackageReference Include="Flowery.NET" Version="2.0.6" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Material.Icons.Avalonia" Version="3.0.0-preview3.1" />
-    <PackageReference Include="Avalonia.Controls.DataGrid" Version="11.3.12" />
-    <PackageReference Include="Avalonia.Diagnostics" Version="11.3.12">
+    <PackageReference Include="Material.Icons.Avalonia" Version="3.0.3-nightly.0.2" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="12.0.0" />
+    <PackageReference Include="Avalonia.Diagnostics" Version="11.3.17">
       <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
       <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
     </PackageReference>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageReference Include="DnsClient" Version="1.8.0" />
     <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.13.1" />
-    <PackageReference Include="OpenCvSharp4" Version="4.13.0.20260427" />
-    <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.13.0.20260302" />
-    <PackageReference Include="System.Text.Json" Version="10.0.7" />
+    <PackageReference Include="OpenCvSharp4" Version="4.13.0.20260528" />
+    <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.13.0.20260528" />
+    <PackageReference Include="System.Text.Json" Version="10.0.8" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.18.0" />
     <PackageReference Include="NCrontab" Version="3.4.0" />
     <PackageReference Include="PDFsharp" Version="6.2.4" />
-    <PackageReference Include="Microsoft.SqlServer.TransactSql.ScriptDom" Version="170.191.0" />
-    <PackageReference Include="LlmTornado" Version="3.8.55" />
+    <PackageReference Include="Microsoft.SqlServer.TransactSql.ScriptDom" Version="180.18.1" />
+    <PackageReference Include="LlmTornado" Version="3.8.57" />
   </ItemGroup>
 
   <ItemGroup>

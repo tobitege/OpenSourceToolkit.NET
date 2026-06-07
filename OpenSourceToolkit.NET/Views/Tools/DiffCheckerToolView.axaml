@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -25,8 +25,8 @@
 
     <Grid RowDefinitions="*,Auto,2*">
         <Grid Grid.Row="0" ColumnDefinitions="*,10,*" Margin="0,0,0,10">
-            <daisy:DaisyTextArea Grid.Column="0" Text="{Binding Text1}" Watermark="{loc:Localize DiffChecker_Original_Watermark}" VerticalAlignment="Stretch" />
-            <daisy:DaisyTextArea Grid.Column="2" Text="{Binding Text2}" Watermark="{loc:Localize DiffChecker_New_Watermark}" VerticalAlignment="Stretch" />
+            <daisy:DaisyTextArea Grid.Column="0" Text="{Binding Text1}" PlaceholderText="{loc:Localize DiffChecker_Original_Watermark}" VerticalAlignment="Stretch" />
+            <daisy:DaisyTextArea Grid.Column="2" Text="{Binding Text2}" PlaceholderText="{loc:Localize DiffChecker_New_Watermark}" VerticalAlignment="Stretch" />
         </Grid>
 
         <daisy:DaisyButton Grid.Row="1" Command="{Binding CompareCommand}" Content="{loc:Localize DiffChecker_Compare_Button}" HorizontalAlignment="Center" Margin="0,0,0,10" Variant="Primary"/>

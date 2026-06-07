@@ -1,6 +1,7 @@
-#nullable enable
+﻿#nullable enable
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Markup.Xaml;
 using System.Collections.Specialized;
 using OpenSourceToolkit.NET.ViewModels.Tools;

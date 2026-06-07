@@ -1,13 +1,12 @@
-#nullable enable
+﻿#nullable enable
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Data.Core;
-using Avalonia.Data.Core.Plugins;
 using Avalonia.Media;
 using Avalonia.Styling;
 using System;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
@@ -286,14 +285,22 @@ namespace OpenSourceToolkit.NET
 
         private void DisableAvaloniaDataAnnotationValidation()
         {
-            // Get an array of plugins to remove
-            var dataValidationPluginsToRemove =
-                BindingPlugins.DataValidators.OfType<DataAnnotationsValidationPlugin>().ToArray();
+            var bindingPluginsType = typeof(Application).Assembly.GetType("Avalonia.Data.Core.Plugins.BindingPlugins");
+            var dataValidatorsProperty = bindingPluginsType?.GetProperty(
+                "DataValidators",
+                BindingFlags.Static | BindingFlags.Public);
+            var dataValidators = dataValidatorsProperty?.GetValue(null) as System.Collections.IList;
+            if (dataValidators == null)
+                return;
 
-            // remove each entry found
+            var dataValidationPluginsToRemove = dataValidators
+                .Cast<object>()
+                .Where(plugin => plugin.GetType().FullName == "Avalonia.Data.Core.Plugins.DataAnnotationsValidationPlugin")
+                .ToArray();
+
             foreach (var plugin in dataValidationPluginsToRemove)
             {
-                BindingPlugins.DataValidators.Remove(plugin);
+                dataValidators.Remove(plugin);
             }
         }
 

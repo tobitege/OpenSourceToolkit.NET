@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -23,15 +23,15 @@
                     <Grid ColumnDefinitions="Auto,Auto,Auto" RowDefinitions="Auto,Auto" >
                         <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,20,10">
                             <TextBlock Text="{loc:Localize Financial_PrincipalAmount_Label}" FontWeight="SemiBold"/>
-                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding Principal}" Watermark="1000" Maximum="999999999" MaxIntegerDigits="9" Width="120" />
+                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding Principal}" PlaceholderText="1000" Maximum="999999999" MaxIntegerDigits="9" Width="120" />
                         </StackPanel>
                         <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,20,10">
                             <TextBlock Text="{loc:Localize Financial_AnnualRate_Label}" FontWeight="SemiBold"/>
-                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding Rate}" Watermark="5" Maximum="100" MaxIntegerDigits="3" MaxDecimalPlaces="3" Width="80" />
+                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding Rate}" PlaceholderText="5" Maximum="100" MaxIntegerDigits="3" MaxDecimalPlaces="3" Width="80" />
                         </StackPanel>
                         <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,10">
                             <TextBlock Text="{loc:Localize Financial_TimeYears_Label}" FontWeight="SemiBold"/>
-                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding Years}" Watermark="10" Maximum="99" MaxIntegerDigits="2" MaxDecimalPlaces="2" Width="80" />
+                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding Years}" PlaceholderText="10" Maximum="99" MaxIntegerDigits="2" MaxDecimalPlaces="2" Width="80" />
                         </StackPanel>
                     </Grid>
                     <daisy:DaisyButton Command="{Binding CalculateInterestCommand}" Content="{loc:Localize Financial_CalculateInterest_Button}" Variant="Primary" HorizontalAlignment="Left"/>
@@ -47,15 +47,15 @@
                     <Grid ColumnDefinitions="Auto,Auto,Auto" RowDefinitions="Auto">
                         <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,20,0">
                             <TextBlock Text="{loc:Localize Financial_LoanAmount_Label}" FontWeight="SemiBold"/>
-                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding LoanAmount}" Watermark="250000" Maximum="999999999" MaxIntegerDigits="9" Width="120" />
+                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding LoanAmount}" PlaceholderText="250000" Maximum="999999999" MaxIntegerDigits="9" Width="120" />
                         </StackPanel>
                         <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,20,0">
                             <TextBlock Text="{loc:Localize Financial_InterestRate_Label}" FontWeight="SemiBold"/>
-                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding LoanRate}" Watermark="4.5" Maximum="100" MaxIntegerDigits="3" MaxDecimalPlaces="3" Width="80" />
+                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding LoanRate}" PlaceholderText="4.5" Maximum="100" MaxIntegerDigits="3" MaxDecimalPlaces="3" Width="80" />
                         </StackPanel>
                         <StackPanel Grid.Row="0" Grid.Column="2">
                             <TextBlock Text="{loc:Localize Financial_LoanTermMonths_Label}" FontWeight="SemiBold"/>
-                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding LoanMonths}" Watermark="360" Maximum="600" MaxIntegerDigits="3" MaxDecimalPlaces="0" Width="80" />
+                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding LoanMonths}" PlaceholderText="360" Maximum="600" MaxIntegerDigits="3" MaxDecimalPlaces="0" Width="80" />
                         </StackPanel>
                     </Grid>
                     <daisy:DaisyButton Command="{Binding CalculateLoanCommand}" Content="{loc:Localize Financial_CalculatePayment_Button}" Variant="Primary" HorizontalAlignment="Left"/>
@@ -71,19 +71,19 @@
                      <Grid ColumnDefinitions="Auto,Auto,Auto,Auto" RowDefinitions="Auto">
                         <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,20,0">
                             <TextBlock Text="{loc:Localize Financial_InitialInvestment_Label}" FontWeight="SemiBold"/>
-                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding InvInitial}" Watermark="5000" Maximum="999999999" MaxIntegerDigits="9" Width="120" />
+                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding InvInitial}" PlaceholderText="5000" Maximum="999999999" MaxIntegerDigits="9" Width="120" />
                         </StackPanel>
                         <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,20,0">
                             <TextBlock Text="{loc:Localize Financial_MonthlyContribution_Label}" FontWeight="SemiBold"/>
-                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding InvMonthly}" Watermark="500" Maximum="999999999" MaxIntegerDigits="9" Width="100" />
+                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding InvMonthly}" PlaceholderText="500" Maximum="999999999" MaxIntegerDigits="9" Width="100" />
                         </StackPanel>
                         <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,20,0">
                             <TextBlock Text="{loc:Localize Financial_AnnualReturn_Label}" FontWeight="SemiBold"/>
-                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding InvRate}" Watermark="7" Maximum="100" MaxIntegerDigits="3" MaxDecimalPlaces="3" Width="80" />
+                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding InvRate}" PlaceholderText="7" Maximum="100" MaxIntegerDigits="3" MaxDecimalPlaces="3" Width="80" />
                         </StackPanel>
                         <StackPanel Grid.Row="0" Grid.Column="3">
                             <TextBlock Text="{loc:Localize Financial_PeriodYears_Label}" FontWeight="SemiBold"/>
-                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding InvYears}" Watermark="20" Maximum="99" MaxIntegerDigits="2" MaxDecimalPlaces="2" Width="80" />
+                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding InvYears}" PlaceholderText="20" Maximum="99" MaxIntegerDigits="2" MaxDecimalPlaces="2" Width="80" />
                         </StackPanel>
                      </Grid>
                      <daisy:DaisyButton Command="{Binding CalculateInvestmentCommand}" Content="{loc:Localize Financial_CalculateGrowth_Button}" Variant="Primary" HorizontalAlignment="Left"/>
@@ -218,11 +218,11 @@
                     <Grid ColumnDefinitions="Auto,20,Auto" RowDefinitions="Auto">
                         <StackPanel Grid.Row="0" Grid.Column="0">
                             <TextBlock Text="{loc:Localize Financial_InitialInvestment_Label}" FontWeight="SemiBold"/>
-                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding Investment}" Watermark="1000" Maximum="999999999" MaxIntegerDigits="9" Width="120" />
+                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding Investment}" PlaceholderText="1000" Maximum="999999999" MaxIntegerDigits="9" Width="120" />
                         </StackPanel>
                         <StackPanel Grid.Row="0" Grid.Column="2">
                             <TextBlock Text="{loc:Localize Financial_ReturnedAmount_Label}" FontWeight="SemiBold"/>
-                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding ReturnAmount}" Watermark="1500" Maximum="999999999" MaxIntegerDigits="9" Width="120" />
+                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding ReturnAmount}" PlaceholderText="1500" Maximum="999999999" MaxIntegerDigits="9" Width="120" />
                         </StackPanel>
                     </Grid>
                     <daisy:DaisyButton Command="{Binding CalculateRoiCommand}" Content="{loc:Localize Financial_CalculateROI_Button}" Variant="Primary" HorizontalAlignment="Left"/>
@@ -239,15 +239,15 @@
                     <Grid ColumnDefinitions="Auto,20,Auto,20,Auto,20,Auto,20,Auto,20,Auto" RowDefinitions="Auto">
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="Home Price" FontWeight="SemiBold" FontSize="11"/>
-                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding MortHomePrice}" Watermark="400000" Maximum="999999999" MaxIntegerDigits="9" Width="100"/>
+                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding MortHomePrice}" PlaceholderText="400000" Maximum="999999999" MaxIntegerDigits="9" Width="100"/>
                         </StackPanel>
                         <StackPanel Grid.Column="2">
                             <TextBlock Text="Down Payment" FontWeight="SemiBold" FontSize="11"/>
-                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding MortDownPayment}" Watermark="80000" Maximum="999999999" MaxIntegerDigits="9" Width="90"/>
+                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding MortDownPayment}" PlaceholderText="80000" Maximum="999999999" MaxIntegerDigits="9" Width="90"/>
                         </StackPanel>
                         <StackPanel Grid.Column="4">
                             <TextBlock Text="Interest Rate %" FontWeight="SemiBold" FontSize="11"/>
-                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding MortInterestRate}" Watermark="6.5" Maximum="100" MaxIntegerDigits="3" MaxDecimalPlaces="3" Width="70"/>
+                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding MortInterestRate}" PlaceholderText="6.5" Maximum="100" MaxIntegerDigits="3" MaxDecimalPlaces="3" Width="70"/>
                         </StackPanel>
                         <StackPanel Grid.Column="6">
                             <TextBlock Text="Term" FontWeight="SemiBold" FontSize="11"/>
@@ -259,11 +259,11 @@
                         </StackPanel>
                         <StackPanel Grid.Column="8">
                             <TextBlock Text="Annual Tax" FontWeight="SemiBold" FontSize="11"/>
-                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding MortAnnualTax}" Watermark="4800" Maximum="999999" MaxIntegerDigits="6" Width="80"/>
+                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding MortAnnualTax}" PlaceholderText="4800" Maximum="999999" MaxIntegerDigits="6" Width="80"/>
                         </StackPanel>
                         <StackPanel Grid.Column="10">
                             <TextBlock Text="Annual Insurance" FontWeight="SemiBold" FontSize="11"/>
-                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding MortAnnualInsurance}" Watermark="1800" Maximum="999999" MaxIntegerDigits="6" Width="80"/>
+                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding MortAnnualInsurance}" PlaceholderText="1800" Maximum="999999" MaxIntegerDigits="6" Width="80"/>
                         </StackPanel>
                     </Grid>
                 </Border>
@@ -382,22 +382,22 @@
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="Darlehensbetrag (€)" FontWeight="SemiBold" FontSize="11"/>
                             <TextBlock Text="Loan Amount" FontSize="10" Foreground="{DynamicResource DaisyBaseContentBrush}"/>
-                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding DeLoanAmount}" Watermark="300000" Maximum="999999999" MaxIntegerDigits="9" Width="110"/>
+                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding DeLoanAmount}" PlaceholderText="300000" Maximum="999999999" MaxIntegerDigits="9" Width="110"/>
                         </StackPanel>
                         <StackPanel Grid.Column="2">
                             <TextBlock Text="Sollzins (% p.a.)" FontWeight="SemiBold" FontSize="11"/>
                             <TextBlock Text="Interest Rate" FontSize="10" Foreground="{DynamicResource DaisyBaseContentBrush}"/>
-                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding DeInterestRate}" Watermark="3.5" Maximum="100" MaxIntegerDigits="3" MaxDecimalPlaces="3" Width="70"/>
+                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding DeInterestRate}" PlaceholderText="3.5" Maximum="100" MaxIntegerDigits="3" MaxDecimalPlaces="3" Width="70"/>
                         </StackPanel>
                         <StackPanel Grid.Column="4">
                             <TextBlock Text="Anf. Tilgung (%)" FontWeight="SemiBold" FontSize="11"/>
                             <TextBlock Text="Initial Repayment" FontSize="10" Foreground="{DynamicResource DaisyBaseContentBrush}"/>
-                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding DeTilgung}" Watermark="2.0" Maximum="100" MaxIntegerDigits="3" MaxDecimalPlaces="3" Width="70"/>
+                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding DeTilgung}" PlaceholderText="2.0" Maximum="100" MaxIntegerDigits="3" MaxDecimalPlaces="3" Width="70"/>
                         </StackPanel>
                         <StackPanel Grid.Column="6">
                             <TextBlock Text="Zinsbindung (J)" FontWeight="SemiBold" FontSize="11"/>
                             <TextBlock Text="Fixed Period (Yrs)" FontSize="10" Foreground="{DynamicResource DaisyBaseContentBrush}"/>
-                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding DeZinsbindung}" Watermark="10" Maximum="99" MaxIntegerDigits="2" MaxDecimalPlaces="0" Width="60"/>
+                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding DeZinsbindung}" PlaceholderText="10" Maximum="99" MaxIntegerDigits="2" MaxDecimalPlaces="0" Width="60"/>
                         </StackPanel>
                     </Grid>
                 </Border>
@@ -493,17 +493,17 @@
                         <StackPanel>
                             <TextBlock Text="Anlagebetrag (€)" FontWeight="SemiBold" FontSize="11"/>
                             <TextBlock Text="Deposit Amount" FontSize="10" Foreground="{DynamicResource DaisyBaseContentBrush}"/>
-                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding DeFdAmount}" Watermark="25000" Maximum="999999999" MaxIntegerDigits="9" Width="110"/>
+                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding DeFdAmount}" PlaceholderText="25000" Maximum="999999999" MaxIntegerDigits="9" Width="110"/>
                         </StackPanel>
                         <StackPanel>
                             <TextBlock Text="Zinssatz (% p.a.)" FontWeight="SemiBold" FontSize="11"/>
                             <TextBlock Text="Interest Rate" FontSize="10" Foreground="{DynamicResource DaisyBaseContentBrush}"/>
-                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding DeFdRate}" Watermark="3.0" Maximum="100" MaxIntegerDigits="3" MaxDecimalPlaces="3" Width="70"/>
+                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding DeFdRate}" PlaceholderText="3.0" Maximum="100" MaxIntegerDigits="3" MaxDecimalPlaces="3" Width="70"/>
                         </StackPanel>
                         <StackPanel>
                             <TextBlock Text="Laufzeit (Monate)" FontWeight="SemiBold" FontSize="11"/>
                             <TextBlock Text="Term (Months)" FontSize="10" Foreground="{DynamicResource DaisyBaseContentBrush}"/>
-                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding DeFdMonths}" Watermark="12" Maximum="600" MaxIntegerDigits="3" MaxDecimalPlaces="0" Width="70"/>
+                            <daisy:DaisyNumericUpDown Size="Small" Value="{Binding DeFdMonths}" PlaceholderText="12" Maximum="600" MaxIntegerDigits="3" MaxDecimalPlaces="0" Width="70"/>
                         </StackPanel>
                         <daisy:DaisyButton Command="{Binding CalculateDeFdCommand}" Content="Berechnen" ToolTip.Tip="Calculate" VerticalAlignment="Bottom" Variant="Primary" HorizontalAlignment="Left"/>
                     </StackPanel>

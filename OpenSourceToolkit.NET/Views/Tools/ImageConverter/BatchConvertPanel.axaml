@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -106,11 +106,11 @@
                     <StackPanel Spacing="8" IsVisible="{Binding ResizeEnabled}">
                         <Grid ColumnDefinitions="50,*">
                             <TextBlock Text="Width" VerticalAlignment="Center" FontSize="12"/>
-                            <NumericUpDown Grid.Column="1" Value="{Binding ResizeWidth}" Minimum="1" Maximum="10000" FormatString="0" Watermark="Auto"/>
+                            <NumericUpDown Grid.Column="1" Value="{Binding ResizeWidth}" Minimum="1" Maximum="10000" FormatString="0" PlaceholderText="Auto"/>
                         </Grid>
                         <Grid ColumnDefinitions="50,*">
                             <TextBlock Text="Height" VerticalAlignment="Center" FontSize="12"/>
-                            <NumericUpDown Grid.Column="1" Value="{Binding ResizeHeight}" Minimum="1" Maximum="10000" FormatString="0" Watermark="Auto"/>
+                            <NumericUpDown Grid.Column="1" Value="{Binding ResizeHeight}" Minimum="1" Maximum="10000" FormatString="0" PlaceholderText="Auto"/>
                         </Grid>
                         <daisy:DaisyCheckBox Content="Keep Aspect Ratio" IsChecked="{Binding MaintainAspectRatio}" FontSize="12"/>
                     </StackPanel>
@@ -140,7 +140,7 @@
                     <daisy:DaisyCheckBox Content="Use Custom Pattern" IsChecked="{Binding UseRenamePattern}" FontSize="12"/>
 
                     <StackPanel Spacing="5" IsVisible="{Binding UseRenamePattern}">
-                        <TextBox Text="{Binding RenamePattern}" Watermark="{}{name}_{width}x{height}"/>
+                        <TextBox Text="{Binding RenamePattern}" PlaceholderText="{}{name}_{width}x{height}"/>
                         <TextBlock Text="{Binding RenamePatternPreview}" FontSize="10" Opacity="0.6" TextTrimming="CharacterEllipsis"/>
                         <TextBlock Text="Placeholders: {name} {ext} {width} {height} {date} {time} {index} {format}"
                                    FontSize="9" Opacity="0.5" TextWrapping="Wrap"/>
@@ -184,7 +184,7 @@
                             <daisy:DaisyButton Grid.Column="0" Command="{Binding ExtractPdfPagesCommand}" Content="Extract PDF Pages..."
                                     Shape="Block"/>
                             <NumericUpDown Grid.Column="1" Value="{Binding PdfDpi}" Minimum="72" Maximum="600"
-                                           FormatString="0" Watermark="DPI" Margin="5,0,0,0"/>
+                                           FormatString="0" PlaceholderText="DPI" Margin="5,0,0,0"/>
                         </Grid>
                     </StackPanel>
 

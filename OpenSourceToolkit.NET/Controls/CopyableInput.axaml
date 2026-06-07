@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -9,7 +9,7 @@
              MinWidth="120">
     <Grid ColumnDefinitions="*,Auto">
         <daisy:DaisyInput Text="{Binding Text, ElementName=Root, Mode=TwoWay}"
-                 Watermark="{Binding Watermark, ElementName=Root}"
+                 PlaceholderText="{Binding Watermark, ElementName=Root}"
                  IsReadOnly="{Binding IsReadOnly, ElementName=Root}"
                  VerticalAlignment="Center"
                  HorizontalAlignment="Stretch" />

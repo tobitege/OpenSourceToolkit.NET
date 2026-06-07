@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:OpenSourceToolkit.NET.ViewModels.Tools"
              xmlns:conv="using:OpenSourceToolkit.NET.Converters"
@@ -37,7 +37,7 @@
 
                     <!-- Search Box -->
                     <daisy:DaisyInput Text="{Binding SearchText}"
-                             Watermark="{loc:Localize Fonts_Search_Watermark}"/>
+                             PlaceholderText="{loc:Localize Fonts_Search_Watermark}"/>
 
                     <!-- Category Filter -->
                     <daisy:DaisySelect ItemsSource="{Binding Categories}"
@@ -280,7 +280,7 @@
                             <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
                                 <daisy:DaisyInput Grid.Column="0" Grid.Row="0"
                                          Text="{Binding CustomPreviewText}"
-                                         Watermark="{loc:Localize Fonts_PreviewText_Watermark}"
+                                         PlaceholderText="{loc:Localize Fonts_PreviewText_Watermark}"
                                          Margin="0,0,12,0"/>
                                 <StackPanel Grid.Column="1" Grid.Row="0" Orientation="Horizontal" Spacing="8">
                                     <TextBlock Text="{loc:Localize Fonts_Size_Label}" VerticalAlignment="Center"/>

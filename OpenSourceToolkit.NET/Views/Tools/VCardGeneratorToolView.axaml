@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -21,20 +21,20 @@
                         <Grid ColumnDefinitions="*,10,*">
                             <StackPanel Grid.Column="0" Spacing="4">
                                 <TextBlock Text="{loc:Localize VCard_FirstName_Label}"/>
-                                <TextBox Text="{Binding FirstName}" Watermark="John"/>
+                                <TextBox Text="{Binding FirstName}" PlaceholderText="John"/>
                             </StackPanel>
                             <StackPanel Grid.Column="2" Spacing="4">
                                 <TextBlock Text="{loc:Localize VCard_LastName_Label}"/>
-                                <TextBox Text="{Binding LastName}" Watermark="Doe"/>
+                                <TextBox Text="{Binding LastName}" PlaceholderText="Doe"/>
                             </StackPanel>
                         </Grid>
                         <StackPanel Spacing="4">
                             <TextBlock Text="{loc:Localize VCard_Email_Label}"/>
-                            <TextBox Text="{Binding Email}" Watermark="john.doe@example.com"/>
+                            <TextBox Text="{Binding Email}" PlaceholderText="john.doe@example.com"/>
                         </StackPanel>
                         <StackPanel Spacing="4">
                             <TextBlock Text="{loc:Localize VCard_Phone_Label}"/>
-                            <TextBox Text="{Binding Phone}" Watermark="+1 555 123 4567"/>
+                            <TextBox Text="{Binding Phone}" PlaceholderText="+1 555 123 4567"/>
                         </StackPanel>
                     </StackPanel>
                 </Border>
@@ -48,15 +48,15 @@
                     <StackPanel Spacing="10">
                         <StackPanel Spacing="4">
                             <TextBlock Text="{loc:Localize VCard_Organization_Label}"/>
-                            <TextBox Text="{Binding Organization}" Watermark="Acme Inc."/>
+                            <TextBox Text="{Binding Organization}" PlaceholderText="Acme Inc."/>
                         </StackPanel>
                         <StackPanel Spacing="4">
                             <TextBlock Text="{loc:Localize VCard_JobTitle_Label}"/>
-                            <TextBox Text="{Binding Title}" Watermark="Software Developer"/>
+                            <TextBox Text="{Binding Title}" PlaceholderText="Software Developer"/>
                         </StackPanel>
                         <StackPanel Spacing="4">
                             <TextBlock Text="{loc:Localize VCard_Website_Label}"/>
-                            <TextBox Text="{Binding Website}" Watermark="https://example.com"/>
+                            <TextBox Text="{Binding Website}" PlaceholderText="https://example.com"/>
                         </StackPanel>
                     </StackPanel>
                 </Border>
@@ -70,26 +70,26 @@
                     <StackPanel Spacing="10">
                         <StackPanel Spacing="4">
                             <TextBlock Text="{loc:Localize VCard_Street_Label}"/>
-                            <TextBox Text="{Binding Street}" Watermark="123 Main Street"/>
+                            <TextBox Text="{Binding Street}" PlaceholderText="123 Main Street"/>
                         </StackPanel>
                         <Grid ColumnDefinitions="*,10,*">
                             <StackPanel Grid.Column="0" Spacing="4">
                                 <TextBlock Text="{loc:Localize VCard_City_Label}"/>
-                                <TextBox Text="{Binding City}" Watermark="New York"/>
+                                <TextBox Text="{Binding City}" PlaceholderText="New York"/>
                             </StackPanel>
                             <StackPanel Grid.Column="2" Spacing="4">
                                 <TextBlock Text="{loc:Localize VCard_State_Label}"/>
-                                <TextBox Text="{Binding State}" Watermark="NY"/>
+                                <TextBox Text="{Binding State}" PlaceholderText="NY"/>
                             </StackPanel>
                         </Grid>
                         <Grid ColumnDefinitions="*,10,*">
                             <StackPanel Grid.Column="0" Spacing="4">
                                 <TextBlock Text="{loc:Localize VCard_PostalCode_Label}"/>
-                                <TextBox Text="{Binding PostalCode}" Watermark="10001"/>
+                                <TextBox Text="{Binding PostalCode}" PlaceholderText="10001"/>
                             </StackPanel>
                             <StackPanel Grid.Column="2" Spacing="4">
                                 <TextBlock Text="{loc:Localize VCard_Country_Label}"/>
-                                <TextBox Text="{Binding Country}" Watermark="USA"/>
+                                <TextBox Text="{Binding Country}" PlaceholderText="USA"/>
                             </StackPanel>
                         </Grid>
                     </StackPanel>

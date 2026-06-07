@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -66,11 +66,11 @@
                                     <Grid ColumnDefinitions="Auto,Auto,Auto" RowDefinitions="Auto,Auto" Margin="0,10">
                                         <StackPanel Grid.Column="0" Margin="0,0,10,0" Spacing="5">
                                             <TextBlock Text="{loc:Localize Clipboard_Width_Label}"/>
-                                            <daisy:DaisyNumericUpDown Value="{Binding ResizeWidth}" Watermark="Original" Minimum="1" Maximum="10000" FormatString="0" MinWidth="120" Size="Small"/>
+                                            <daisy:DaisyNumericUpDown Value="{Binding ResizeWidth}" PlaceholderText="Original" Minimum="1" Maximum="10000" FormatString="0" MinWidth="120" Size="Small"/>
                                         </StackPanel>
                                         <StackPanel Grid.Column="1" Margin="0,0,10,0" Spacing="5">
                                             <TextBlock Text="{loc:Localize Clipboard_Height_Label}"/>
-                                            <daisy:DaisyNumericUpDown Value="{Binding ResizeHeight}" Watermark="Original" Minimum="1" Maximum="10000" FormatString="0" MinWidth="120" Size="Small"/>
+                                            <daisy:DaisyNumericUpDown Value="{Binding ResizeHeight}" PlaceholderText="Original" Minimum="1" Maximum="10000" FormatString="0" MinWidth="120" Size="Small"/>
                                         </StackPanel>
                                         <daisy:DaisyCheckBox Grid.Column="2" Content="{loc:Localize Clipboard_MaintainAspect_Label}"
                                                   IsChecked="{Binding MaintainAspectRatio}"

@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:OpenSourceToolkit.NET.ViewModels.Tools"
              xmlns:controls="using:OpenSourceToolkit.NET.Controls"
@@ -8,7 +8,7 @@
              x:DataType="vm:AsciiArtToolViewModel">
     <Grid RowDefinitions="Auto,*">
         <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto,Auto,Auto" Margin="0,0,0,20">
-            <TextBox Grid.Column="0" Text="{Binding Path}" Watermark="{loc:Localize AsciiArt_ImagePath_Watermark}" Margin="0,0,10,0"
+            <TextBox Grid.Column="0" Text="{Binding Path}" PlaceholderText="{loc:Localize AsciiArt_ImagePath_Watermark}" Margin="0,0,10,0"
                      IsReadOnly="True" VerticalAlignment="Center" />
             <daisy:DaisyButton Grid.Column="1" Click="Browse_Click" Content="..." ToolTip.Tip="{loc:Localize AsciiArt_Browse_Tooltip}" Margin="0,0,10,0" VerticalAlignment="Center"/>
             <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="0,0,10,0" VerticalAlignment="Center" Spacing="5">

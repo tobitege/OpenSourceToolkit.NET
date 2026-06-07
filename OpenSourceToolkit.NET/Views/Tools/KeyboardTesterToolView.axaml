@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -134,7 +134,7 @@
                                  IsEnabled="{Binding IsTypingTestActive}"
                                  AcceptsReturn="True" TextWrapping="Wrap"
                                  Height="100" FontSize="16"
-                                 Watermark="{loc:Localize Keyboard_TypeHere_Watermark}"
+                                 PlaceholderText="{loc:Localize Keyboard_TypeHere_Watermark}"
                                  FontFamily="Consolas,Monospace"/>
 
                         <Grid ColumnDefinitions="*,*,*">

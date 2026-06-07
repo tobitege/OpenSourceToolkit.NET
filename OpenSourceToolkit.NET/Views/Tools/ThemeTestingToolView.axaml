@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:OpenSourceToolkit.NET.ViewModels"
              xmlns:toolsvm="using:OpenSourceToolkit.NET.ViewModels.Tools"
@@ -229,9 +229,9 @@
                     <WrapPanel Orientation="Horizontal">
                         <StackPanel Spacing="8" Margin="0,0,30,16">
                             <TextBlock Text="TextBox" FontWeight="SemiBold" FontSize="13"/>
-                            <TextBox Watermark="Enter text..." Width="200" Height="32"/>
+                            <TextBox PlaceholderText="Enter text..." Width="200" Height="32"/>
                             <TextBox Text="With content" Width="200" Height="32"/>
-                            <TextBox Watermark="Disabled" IsEnabled="False" Width="200" Height="32"/>
+                            <TextBox PlaceholderText="Disabled" IsEnabled="False" Width="200" Height="32"/>
                         </StackPanel>
                         <StackPanel Spacing="8" Margin="0,0,30,16">
                             <TextBlock Text="TextBox (Multiline)" FontWeight="SemiBold" FontSize="13"/>
@@ -240,7 +240,7 @@
                         </StackPanel>
                         <StackPanel Spacing="8" Margin="0,0,30,16">
                             <TextBlock Text="AutoCompleteBox" FontWeight="SemiBold" FontSize="13"/>
-                            <AutoCompleteBox Watermark="Type to search..." Width="200"
+                            <AutoCompleteBox PlaceholderText="Type to search..." Width="200"
                                              ItemsSource="Apple,Banana,Cherry,Date"/>
                         </StackPanel>
                         <StackPanel Spacing="8" Margin="0,0,30,16">
@@ -562,7 +562,7 @@
                     <Separator Background="{DynamicResource DaisyBase300Brush}" Height="1" Margin="0,8"/>
                     <TextBlock Text="Label" FontWeight="SemiBold" FontSize="13"/>
                     <Label Content="This is a Label control" Target="{Binding #labelTarget}"/>
-                    <TextBox x:Name="labelTarget" Watermark="Target of label" Width="200" HorizontalAlignment="Left"/>
+                    <TextBox x:Name="labelTarget" PlaceholderText="Target of label" Width="200" HorizontalAlignment="Left"/>
                 </StackPanel>
             </Border>
 

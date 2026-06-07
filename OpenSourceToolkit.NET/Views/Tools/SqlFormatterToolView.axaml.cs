@@ -1,4 +1,5 @@
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
+using Avalonia.Input.Platform;
 using OpenSourceToolkit.NET.ViewModels.Tools;
 
 namespace OpenSourceToolkit.NET.Views.Tools

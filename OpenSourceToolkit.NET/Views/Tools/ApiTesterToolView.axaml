@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -14,7 +14,7 @@
      <!-- URL Bar -->
      <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,10">
         <daisy:DaisySelect ItemsSource="{Binding Methods}" SelectedItem="{Binding SelectedMethod}" Width="110" Margin="0,0,10,0"/>
-        <daisy:DaisyInput Text="{Binding Url}" Grid.Column="1" Watermark="{loc:Localize ApiTester_Url_Watermark}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+        <daisy:DaisyInput Text="{Binding Url}" Grid.Column="1" PlaceholderText="{loc:Localize ApiTester_Url_Watermark}" Margin="0,0,10,0" VerticalAlignment="Center"/>
         <daisy:DaisyButton Command="{Binding ExecuteRequestCommand}" Content="{loc:Localize ApiTester_Send_Button}" Grid.Column="2" IsEnabled="{Binding !IsLoading}" Variant="Primary"/>
      </Grid>
 
@@ -24,10 +24,10 @@
             <TextBlock Text="{loc:Localize ApiTester_Request_Label}" FontWeight="Bold" Margin="0,0,0,5"/>
             <daisy:DaisyTabs Grid.Row="1" Variant="Boxed" Size="Small">
                <TabItem Header="{loc:Localize ApiTester_Headers_Tab}">
-               <daisy:DaisyTextArea Text="{Binding Headers}" Watermark="{loc:Localize ApiTester_Headers_Watermark}" VerticalContentAlignment="Top"/>
+               <daisy:DaisyTextArea Text="{Binding Headers}" PlaceholderText="{loc:Localize ApiTester_Headers_Watermark}" VerticalContentAlignment="Top"/>
                </TabItem>
                <TabItem Header="{loc:Localize ApiTester_Body_Tab}">
-               <daisy:DaisyTextArea Text="{Binding Body}" Watermark="{loc:Localize ApiTester_Body_Watermark}" VerticalContentAlignment="Top"/>
+               <daisy:DaisyTextArea Text="{Binding Body}" PlaceholderText="{loc:Localize ApiTester_Body_Watermark}" VerticalContentAlignment="Top"/>
                </TabItem>
                <TabItem Header="{loc:Localize ApiTester_Auth_Tab}">
                   <ScrollViewer>
@@ -38,7 +38,7 @@
                          <!-- Bearer -->
                          <StackPanel IsVisible="{Binding SelectedAuthType, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static api:AuthType.Bearer}}" Spacing="5">
                              <TextBlock Text="{loc:Localize ApiTester_Token_Label}"/>
-                             <daisy:DaisyInput Text="{Binding AuthToken}" PasswordChar="*" Watermark="{loc:Localize ApiTester_BearerToken_Watermark}"/>
+                             <daisy:DaisyInput Text="{Binding AuthToken}" PasswordChar="*" PlaceholderText="{loc:Localize ApiTester_BearerToken_Watermark}"/>
                          </StackPanel>
 
                          <!-- Basic -->

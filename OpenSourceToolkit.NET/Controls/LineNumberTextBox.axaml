@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="OpenSourceToolkit.NET.Controls.LineNumberTextBox"
              x:Name="Root"
@@ -30,7 +30,7 @@
             <!-- Text Editor -->
             <TextBox x:Name="PART_TextBox" Grid.Column="1"
                      Text="{Binding Text, ElementName=Root, Mode=TwoWay}"
-                     Watermark="{Binding Watermark, ElementName=Root}"
+                     PlaceholderText="{Binding Watermark, ElementName=Root}"
                      AcceptsReturn="{Binding AcceptsReturn, ElementName=Root}"
                      TextWrapping="{Binding TextWrapping, ElementName=Root}"
                      FontFamily="{Binding FontFamily, ElementName=Root}"

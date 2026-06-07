@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - 2026-06-07
+
+### Changed
+
+- Upgraded the desktop app to Avalonia 12 and Flowery.NET 2.0.6.
+- Updated eligible direct NuGet dependencies that were older than seven days, including OpenCvSharp, SkiaSharp, System.Text.Json, System.Drawing.Common, YamlDotNet, LlmTornado, Microsoft.SqlServer.TransactSql.ScriptDom, and MSTest packages.
+- Replaced deprecated Avalonia placeholder APIs across the UI with `PlaceholderText`.
+- Updated fullscreen image viewer window chrome settings for Avalonia 12.
+- Updated MSTest exception assertions for the MSTest 4 assertion API.
+
+### Fixed
+
+- Restored text clipboard copy behavior after Avalonia 12 moved clipboard text helpers to extension methods.
+- Preserved duplicate validation-plugin removal behavior after Avalonia 12 made the binding plugin container non-public.
+
 ## [0.2.3] - 2026-05-18
 
 ### Security

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenSourceToolkit.Converters;
 
@@ -53,7 +53,7 @@ namespace OpenSourceToolkit.Tests
         [TestMethod]
         public void Base64_Decode_Invalid_ThrowsFormatException()
         {
-            Assert.ThrowsException<FormatException>(() => Base64Converter.Decode("not-base64"));
+            Assert.Throws<FormatException>(() => Base64Converter.Decode("not-base64"));
         }
 
         // EthConverter

@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:OpenSourceToolkit.NET.ViewModels.Tools"
              xmlns:daisy="clr-namespace:Flowery.Controls;assembly=Flowery.NET"
@@ -56,7 +56,7 @@
             <!-- Inputs -->
             <StackPanel IsVisible="{Binding IsTextOrUrl}" Spacing="5">
                 <TextBlock Text="{loc:Localize QrCode_Content_Label}" />
-                <daisy:DaisyTextArea Text="{Binding InputText}" Watermark="{loc:Localize QrCode_ContentWatermark}" MinHeight="80" />
+                <daisy:DaisyTextArea Text="{Binding InputText}" PlaceholderText="{loc:Localize QrCode_ContentWatermark}" MinHeight="80" />
             </StackPanel>
 
             <StackPanel IsVisible="{Binding IsEmail}" Spacing="5">
