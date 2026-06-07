@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup Condition="'$(GenerateDocumentationFile)'=='true'">
+    <!-- XML docs are generated for release packages, but not every public API is documented yet. -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+</Project>
