@@ -2,9 +2,9 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
-    <Version>1.0.0</Version>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>1.0.0.0</FileVersion>
+    <Version>1.0.1</Version>
+    <AssemblyVersion>1.0.1.0</AssemblyVersion>
+    <FileVersion>1.0.1.0</FileVersion>
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>disable</ImplicitUsings>
     <OutputPath Condition="'$(Configuration)'=='Debug'">..\bin\debug\</OutputPath>
@@ -65,7 +65,7 @@
 
   <!-- Use NuGet package when UseLocalFlowery is false or not set -->
   <ItemGroup Condition="'$(UseLocalFlowery)' != 'true'">
-    <PackageReference Include="Flowery.NET" Version="2.0.6" />
+    <PackageReference Include="Flowery.NET" Version="2.0.8" />
   </ItemGroup>
 
   <ItemGroup>
@@ -77,15 +77,15 @@
     </PackageReference>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageReference Include="DnsClient" Version="1.8.0" />
-    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.13.1" />
-    <PackageReference Include="OpenCvSharp4" Version="4.13.0.20260528" />
-    <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.13.0.20260528" />
-    <PackageReference Include="System.Text.Json" Version="10.0.8" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.18.0" />
+    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.14.0" />
+    <PackageReference Include="OpenCvSharp4" Version="4.13.0.20260602" />
+    <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.13.0.20260602" />
+    <PackageReference Include="System.Text.Json" Version="10.0.9" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.19.1" />
     <PackageReference Include="NCrontab" Version="3.4.0" />
     <PackageReference Include="PDFsharp" Version="6.2.4" />
-    <PackageReference Include="Microsoft.SqlServer.TransactSql.ScriptDom" Version="180.18.1" />
-    <PackageReference Include="LlmTornado" Version="3.8.57" />
+    <PackageReference Include="Microsoft.SqlServer.TransactSql.ScriptDom" Version="180.37.3" />
+    <PackageReference Include="LlmTornado" Version="3.8.60" />
   </ItemGroup>
 
   <ItemGroup>
