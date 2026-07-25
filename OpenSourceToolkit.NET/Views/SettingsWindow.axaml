@@ -22,7 +22,7 @@
         <!-- DaisyTabs for Settings -->
         <daisy:DaisyTabs Grid.Row="0" Variant="Boxed" Size="Small">
             <!-- General Tab -->
-            <TabItem>
+            <TabItem x:Name="GeneralSettingsTab">
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <materialIcons:MaterialIcon Kind="Cog" Width="16" Height="16"/>
@@ -533,7 +533,7 @@
 
                                     <TextBlock Grid.Row="1" Grid.Column="0" Text="{loc:Localize Settings_About_Runtime}"
                                                Foreground="{DynamicResource DaisyBaseContentBrush}"/>
-                                    <TextBlock Grid.Row="1" Grid.Column="1" Text=".NET Framework 4.7.2"
+                                    <TextBlock Grid.Row="1" Grid.Column="1" Text=".NET 10"
                                                Foreground="{DynamicResource DaisyBaseContentBrush}"/>
 
                                     <TextBlock Grid.Row="2" Grid.Column="0" Text="{loc:Localize Settings_About_License}"
@@ -550,7 +550,9 @@
 
         <!-- Footer Buttons -->
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12" Margin="0,16,0,0">
-            <daisy:DaisyButton Content="{loc:Localize Settings_Button_ResetDefaults}" Command="{Binding ResetCommand}"/>
+            <daisy:DaisyButton Content="{loc:Localize Settings_Button_ResetDefaults}"
+                               Command="{Binding ResetCommand}"
+                               IsVisible="{Binding IsSelected, ElementName=GeneralSettingsTab}"/>
             <daisy:DaisyButton Content="{loc:Localize Settings_Button_Close}" Click="CloseButton_Click" Variant="Primary"/>
         </StackPanel>
     </Grid>
