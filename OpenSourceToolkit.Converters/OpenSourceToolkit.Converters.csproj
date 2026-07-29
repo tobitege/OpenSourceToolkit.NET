@@ -5,7 +5,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.14.0" />
+    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.15.0" />
     <PackageReference Include="OpenCvSharp4" Version="4.13.0.20260602" />
     <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.13.0.20260602" />
     <PackageReference Include="System.Drawing.Common" Version="10.0.9" />

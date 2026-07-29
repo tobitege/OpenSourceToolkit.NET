@@ -1,10 +1,11 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenSourceToolkit.NET.Localization;
 using System.Globalization;
 
 namespace OpenSourceToolkit.Tests
 {
     [TestClass]
+    [DoNotParallelize]
     public class LocalizationTests
     {
         private CultureInfo _originalCulture;
