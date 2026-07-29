@@ -1,28 +1,115 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using Flowery.Controls;
 using OpenSourceToolkit.NET.Services;
 using OpenSourceToolkit.NET.ViewModels;
 
 namespace OpenSourceToolkit.NET.Views
 {
+    internal enum SettingsSection
+    {
+        General,
+        AiConnections,
+        AiProviders,
+        About
+    }
+
     public partial class SettingsWindow : Window
     {
         private SettingsViewModel _viewModel;
 
-        public SettingsWindow()
+        public SettingsWindow() : this(SettingsSection.General)
+        {
+        }
+
+        internal SettingsWindow(SettingsSection initialSection)
         {
             AvaloniaXamlLoader.Load(this);
+            ConfigureConnectionModelPicker();
+            SelectInitialSection(initialSection);
             _viewModel = new SettingsViewModel();
             _viewModel.PromptSaveChangesAction = PromptSaveChangesAsync;
+            _viewModel.OpenAiBrowserAction = OpenBrowserAsync;
 #if DEBUG
             _viewModel.ShowDebugExceptionAction = ShowDebugException;
 #endif
             DataContext = _viewModel;
+        }
+
+        private async Task<bool> OpenBrowserAsync(Uri authorizationUri)
+        {
+            var topLevel = TopLevel.GetTopLevel(this);
+            return topLevel != null &&
+                   await topLevel.Launcher.LaunchUriAsync(authorizationUri);
+        }
+
+        private void SelectInitialSection(SettingsSection section)
+        {
+            GetSettingsNavigationList().SelectedIndex = (int)section;
+        }
+
+        private void SettingsNavigationButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is DaisyButton button &&
+                button.Tag is string sectionIndex &&
+                int.TryParse(sectionIndex, out var selectedIndex))
+            {
+                GetSettingsNavigationList().SelectedIndex = selectedIndex;
+            }
+        }
+
+        private ListBox GetSettingsNavigationList()
+        {
+            return this.FindControl<ListBox>("SettingsNavigationList")
+                ?? throw new InvalidOperationException("Settings navigation was not loaded.");
+        }
+
+        private void ConfigureConnectionModelPicker()
+        {
+            GetConnectionModelPicker().ItemFilter = FilterModelOption;
+        }
+
+        private static bool FilterModelOption(string searchText, object item)
+        {
+            return item is AiModelOption model &&
+                   (string.IsNullOrWhiteSpace(searchText) ||
+                    model.ModelId.Contains(searchText.Trim(), StringComparison.OrdinalIgnoreCase));
+        }
+
+        private AutoCompleteBox GetConnectionModelPicker()
+        {
+            return this.FindControl<AutoCompleteBox>("ConnectionModelPicker")
+                ?? throw new InvalidOperationException("Connection model picker was not loaded.");
+        }
+
+        private void ConnectionModelPicker_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (sender is AutoCompleteBox modelPicker)
+                modelPicker.IsDropDownOpen = true;
+        }
+
+        private void OpenConnectionModelList_Click(object sender, RoutedEventArgs e)
+        {
+            var modelPicker = GetConnectionModelPicker();
+            modelPicker.Focus();
+            modelPicker.IsDropDownOpen = true;
+            e.Handled = true;
+        }
+
+        private void RemoveProviderModel_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is DaisyButton { Tag: AiModelOption model } &&
+                DataContext is SettingsViewModel viewModel &&
+                viewModel.RemoveModelCommand.CanExecute(model))
+            {
+                viewModel.RemoveModelCommand.Execute(model);
+                e.Handled = true;
+            }
         }
 
         private async Task<bool?> PromptSaveChangesAsync(string message)
@@ -37,9 +124,24 @@ namespace OpenSourceToolkit.NET.Views
             };
 
             bool? result = null;
-            var saveBtn = new Button { Content = "Save", Width = 80 };
-            var discardBtn = new Button { Content = "Discard", Width = 80 };
-            var cancelBtn = new Button { Content = "Cancel", Width = 80 };
+            var saveBtn = new DaisyButton
+            {
+                Content = "Save",
+                Width = 80,
+                Variant = DaisyButtonVariant.Primary
+            };
+            var discardBtn = new DaisyButton
+            {
+                Content = "Discard",
+                Width = 80,
+                Variant = DaisyButtonVariant.Warning
+            };
+            var cancelBtn = new DaisyButton
+            {
+                Content = "Cancel",
+                Width = 80,
+                Variant = DaisyButtonVariant.Default
+            };
 
             saveBtn.Click += (s, e) => { result = true; dialog.Close(); };
             discardBtn.Click += (s, e) => { result = false; dialog.Close(); };
@@ -149,6 +251,12 @@ namespace OpenSourceToolkit.NET.Views
                 return;
             }
             base.OnClosing(e);
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            _viewModel?.Dispose();
+            base.OnClosed(e);
         }
     }
 }

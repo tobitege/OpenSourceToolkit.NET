@@ -15,6 +15,7 @@ using Flowery.Localization;
 using OpenSourceToolkit.NET.Helpers;
 using OpenSourceToolkit.NET.Localization;
 using OpenSourceToolkit.NET.Services;
+using OpenSourceToolkit.NET.Services.Ai;
 using OpenSourceToolkit.NET.ViewModels;
 using OpenSourceToolkit.NET.Views;
 using PdfSharp.Fonts;
@@ -145,6 +146,8 @@ namespace OpenSourceToolkit.NET
                 // NOTE: MainWindow.cs constructor creates its own MainWindowViewModel and sets DataContext
                 // Do NOT create a new MainWindowViewModel here - it would overwrite the one created in MainWindow!
                 desktop.MainWindow = new MainWindow();
+                desktop.Exit += (_, _) => AiAccessServices.DisposeCurrent();
+                _ = AiAccessServices.RestoreSavedModeAsync();
             }
 
             // Step 2: Complete framework initialization (styles are now fully loaded)

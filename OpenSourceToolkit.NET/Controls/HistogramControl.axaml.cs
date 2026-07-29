@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using Avalonia;
 using Avalonia.Controls;
@@ -76,7 +76,7 @@ namespace OpenSourceToolkit.NET.Controls
             {
                 using (var ms = new MemoryStream())
                 {
-                    bitmap.Save(ms);
+                    bitmap.Save(ms, PngBitmapEncoderOptions.Default);
                     ms.Position = 0;
 
                     using (var magickImage = new ImageMagick.MagickImage(ms))

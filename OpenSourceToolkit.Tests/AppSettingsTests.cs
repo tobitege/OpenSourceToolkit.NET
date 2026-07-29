@@ -1,5 +1,6 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenSourceToolkit.NET.Services;
+using OpenSourceToolkit.NET.Services.Ai;
 using System;
 using System.IO;
 using System.Text.Json;
@@ -172,7 +173,11 @@ namespace OpenSourceToolkit.Tests
                 WindowY = 250.0,
                 WindowWidth = 1024.0,
                 WindowHeight = 768.0,
-                WindowMaximized = false
+                WindowMaximized = false,
+                AiSettings = new AiSettingsData
+                {
+                    OpenAiAccessMode = AiAccessMode.CodexOAuth
+                }
             };
 
             var json = JsonSerializer.Serialize(original);
@@ -186,6 +191,9 @@ namespace OpenSourceToolkit.Tests
             Assert.AreEqual(original.WindowWidth, deserialized.WindowWidth);
             Assert.AreEqual(original.WindowHeight, deserialized.WindowHeight);
             Assert.AreEqual(original.WindowMaximized, deserialized.WindowMaximized);
+            Assert.AreEqual(
+                AiAccessMode.CodexOAuth,
+                deserialized.AiSettings.OpenAiAccessMode);
         }
 
         [TestMethod]
@@ -222,6 +230,7 @@ namespace OpenSourceToolkit.Tests
             Assert.AreEqual(192, settings.AudioMp3Bitrate);
             Assert.IsNull(settings.WindowX);
             Assert.IsFalse(settings.WindowMaximized);
+            Assert.IsNull(settings.AiSettings.OpenAiAccessMode);
         }
 
         [TestMethod]

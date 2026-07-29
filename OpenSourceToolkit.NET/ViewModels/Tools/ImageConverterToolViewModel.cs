@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -82,7 +82,7 @@ namespace OpenSourceToolkit.NET.ViewModels.Tools
         public Func<Task<string>> SavePdfAction { get => Batch.SavePdfAction; set => Batch.SavePdfAction = value; }
         public Action OpenPdfAction { get => Batch.OpenPdfAction; set => Batch.OpenPdfAction = value; }
 
-        public Action<string> CopyToClipboardAction { get => Ai.CopyToClipboardAction; set => Ai.CopyToClipboardAction = value; }
+        public Func<string, Task> CopyToClipboardAction { get => Ai.CopyToClipboardAction; set => Ai.CopyToClipboardAction = value; }
 
         public Func<string, Task<string>> ShowRenameSessionDialogAction { get => Sessions.ShowRenameSessionDialogAction; set => Sessions.ShowRenameSessionDialogAction = value; }
         public Func<string, Task<bool?>> PromptSaveChangesAction { get; set; }

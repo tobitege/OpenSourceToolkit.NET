@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 using OpenSourceToolkit.AI.Models;
@@ -95,6 +95,7 @@ namespace OpenSourceToolkit.AI
                 return ImageGenerationResponse.Error($"Provider '{_settings.ProviderType}' does not support image generation.");
 
             var request = new ImageGenerationRequest(prompt);
+            ApplyDefaultImageModel(request);
             return await _provider.GenerateImageAsync(request, cancellationToken).ConfigureAwait(false);
         }
 
@@ -104,7 +105,18 @@ namespace OpenSourceToolkit.AI
             if (!_provider.SupportsImageGeneration)
                 return ImageGenerationResponse.Error($"Provider '{_settings.ProviderType}' does not support image generation.");
 
+            ApplyDefaultImageModel(request);
             return await _provider.GenerateImageAsync(request, cancellationToken).ConfigureAwait(false);
+        }
+
+        private void ApplyDefaultImageModel(ImageGenerationRequest request)
+        {
+            if (!string.IsNullOrWhiteSpace(request.Model))
+                return;
+
+            var imageModels = AiProviderSettings.GetDefaultImageModels(_settings.ProviderType);
+            if (imageModels.Count > 0)
+                request.Model = imageModels[0];
         }
 
         public async Task<bool> TestConnectionAsync(CancellationToken cancellationToken = default)

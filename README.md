@@ -5,7 +5,7 @@
 
 ![OpenSourceToolkit.NET Screenshot](OpenSourceToolkit.NET.png)
 
-Originally started as a C#/.NET 8 port of the utilities and tools found in the inspiring **[OpenSourceToolkit](https://github.com/truethari/OpensourceToolkit/)** project, and has since been extended with additional tools and features (including a full Avalonia desktop app to explore everything interactively). **Special thanks to the original author [truethari](https://github.com/truethari) for their incredible work.**
+Originally started as a C#/.NET port of the utilities and tools found in the inspiring **[OpenSourceToolkit](https://github.com/truethari/OpensourceToolkit/)** project, and has since been extended with additional tools and features (including a full Avalonia desktop app to explore everything interactively). **Special thanks to the original author [truethari](https://github.com/truethari) for their incredible work.**
 
 This suite provides reusable, modular components for text manipulation, security, networking, hardware testing, and more. Crucially, it includes a full **Avalonia UI application** that allows users to interactively test and verify most functions of the **40+ tools (currently 41)** and libraries in a modern desktop interface.
 
@@ -27,7 +27,7 @@ The total lines of code count (excluding comments) is > 91K.
 
 ## 🚀 Overview
 
-- **Frameworks**: .NET 8 (`net8.0` libraries + `net8.0-windows` desktop app)
+- **Framework**: .NET 10 for Windows x64 (`net10.0-windows`, `win-x64`)
 - **Language**: C# (LangVersion: `latest`)
 - **Output**: Reusable DLLs (class libraries) and a desktop GUI (WinExe).
 - **Architecture**: Modular design with a core library and specialized domain libraries.
@@ -39,7 +39,7 @@ The solution `OpenSourceToolkit.Net.sln` is organized into the following project
 ### **OpenSourceToolkit.NET**
 
 - **Avalonia desktop application (GUI)** to test all tools interactively.
-- Target framework: `net8.0-windows`
+- Target framework: `net10.0-windows` (`win-x64`)
 - Dependencies: All of the below, `Avalonia`, `Flowery.NET`
 
 | Project | Description | Dependencies |
@@ -59,7 +59,7 @@ The solution `OpenSourceToolkit.Net.sln` is organized into the following project
 | **OpenSourceToolkit.Calculators** | Financial calculators (Compound Interest, Loan Payments, ROI). | None |
 | **OpenSourceToolkit.Tests** | MSTest unit tests for ensuring parity and correctness. | MSTest |
 
-> Note: This repository also contains `OpenSourceToolkit.AI` (a .NET 8 library), but it is not included in `OpenSourceToolkit.Net.sln` by default.
+> Note: This repository also contains `OpenSourceToolkit.AI` (a .NET 10 Windows x64 library), but it is not included in `OpenSourceToolkit.Net.sln` by default.
 
 ## 🧰 Tool Catalog (GUI)
 
@@ -137,8 +137,8 @@ The desktop app (`OpenSourceToolkit.NET`) currently includes **41 tools**, group
 
 ### Prerequisites
 
-- .NET 8 SDK
-- Windows (required for the `OpenSourceToolkit.NET` desktop app, and for projects targeting `net8.0-windows`)
+- .NET 10 SDK
+- 64-bit Windows
 
 ### Build
 
@@ -150,14 +150,14 @@ dotnet build
 
 **Note**: Debug builds are configured to output artifacts to a common directory:
 
-- **Debug**: `bin\debug\net8.0\` and `bin\debug\net8.0-windows\`
+- **Debug**: `bin\debug\net10.0-windows\win-x64\`
 
 ### Run Avalonia App (GUI)
 
 The best way to explore the toolkit is via the Avalonia UI app, which provides a dedicated interface for every tool:
 
 ```bash
-.\bin\debug\net8.0-windows\OpenSourceToolkit.NET.exe
+.\bin\debug\net10.0-windows\win-x64\OpenSourceToolkit.NET.exe
 ```
 
 ### Run Tests

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace OpenSourceToolkit.AI.Models
 {
@@ -28,6 +28,13 @@ namespace OpenSourceToolkit.AI.Models
                         ProviderType = AiProviderType.OpenRouter,
                         Endpoint = "https://openrouter.ai/api/v1",
                         ModelId = "anthropic/claude-sonnet-4.5"
+                    };
+                case AiProviderType.HuggingFace:
+                    return new AiProviderSettings
+                    {
+                        ProviderType = AiProviderType.HuggingFace,
+                        Endpoint = "https://router.huggingface.co/v1",
+                        ModelId = "openai/gpt-oss-120b"
                     };
                 case AiProviderType.Anthropic:
                     return new AiProviderSettings
@@ -94,9 +101,12 @@ namespace OpenSourceToolkit.AI.Models
                         "openai/o3",
                         "openai/o4-mini",
                         "google/gemini-3-pro-preview",
-                        "google/gemini-2.5-pro",
-                        "google/gemini-2.5-flash",
                         "google/gemini-3-pro-image-preview"
+                    };
+                case AiProviderType.HuggingFace:
+                    return new List<string>
+                    {
+                        "openai/gpt-oss-120b"
                     };
                 case AiProviderType.Anthropic:
                     return new List<string>
@@ -107,9 +117,7 @@ namespace OpenSourceToolkit.AI.Models
                 case AiProviderType.Google:
                     return new List<string>
                     {
-                        "gemini-3-pro-preview",
-                        "gemini-2.5-pro-preview-06-05",
-                        "gemini-2.5-flash-preview-05-20"
+                        "gemini-3-pro-preview"
                     };
                 case AiProviderType.Ollama:
                     return new List<string>
@@ -154,25 +162,34 @@ namespace OpenSourceToolkit.AI.Models
                 case AiProviderType.OpenAI:
                     return new List<string>
                     {
-                        "gpt-image-1-mini",
-                        "gpt-image-1"
+                        "gpt-image-2"
                     };
                 case AiProviderType.OpenRouter:
-                    // OpenRouter uses chat completions with modalities:["image","text"]
-                    // Models with "image" in output_modalities support generation
+                    // Fallback only. The desktop UI refreshes this catalog from OpenRouter's
+                    // capability-filtered models API when a connection is tested.
                     return new List<string>
                     {
-                        // DO NOT CHANGE THIS CURATED LIST!!!
-                        "google/gemini-3-pro-image-preview",
-                        "google/gemini-2.5-flash-image",
+                        "black-forest-labs/flux.2-max",
                         "black-forest-labs/flux.2-pro",
-                        "openai/gpt-5-image-mini"
+                        "bytedance-seed/seedream-4.5",
+                        "google/gemini-3-pro-image",
+                        "google/gemini-3.1-flash-image",
+                        "google/gemini-3.1-flash-lite-image",
+                        "microsoft/mai-image-2.5",
+                        "openai/gpt-image-2",
+                        "x-ai/grok-imagine-image-quality"
+                    };
+                case AiProviderType.HuggingFace:
+                    return new List<string>
+                    {
+                        "stabilityai/stable-diffusion-3-medium-diffusers"
                     };
                 case AiProviderType.Google:
                     return new List<string>
                     {
-                        "imagen-3.0-generate-002",
-                        "imagen-3.0-fast-generate-001"
+                        "gemini-3.1-flash-image",
+                        "gemini-3.1-flash-lite-image",
+                        "gemini-3-pro-image"
                     };
                 // Anthropic, Ollama, LMStudio do not support image generation
                 default:
@@ -191,22 +208,39 @@ namespace OpenSourceToolkit.AI.Models
 
             var modelLower = modelId.ToLowerInvariant();
 
+            if (IsExcludedModel(modelLower))
+                return false;
+
             switch (providerType)
             {
                 case AiProviderType.OpenAI:
-                    // gpt-image-1 is OpenAI's image generation model
                     return modelLower.Contains("gpt-image");
                 case AiProviderType.OpenRouter:
-                    // OpenRouter: models with "image" in output_modalities
-                    // Patterns: Gemini image models, FLUX models, OpenAI image models via OpenRouter
-                    return modelLower.Contains("-image")
-                        || modelLower.Contains("flux");
+                    return GetDefaultImageModels(providerType).Contains(modelLower)
+                        || modelLower.Contains("-image")
+                        || modelLower.Contains("/flux")
+                        || modelLower.Contains("/krea-")
+                        || modelLower.Contains("/recraft")
+                        || modelLower.Contains("/riverflow")
+                        || modelLower.Contains("/seedream")
+                        || modelLower.Contains("grok-imagine");
+                case AiProviderType.HuggingFace:
+                    return GetDefaultImageModels(providerType).Contains(modelLower)
+                        || modelLower.Contains("stable-diffusion")
+                        || modelLower.Contains("/flux")
+                        || modelLower.Contains("qwen-image");
                 case AiProviderType.Google:
-                    // Imagen models are Google's image generation models
-                    return modelLower.Contains("imagen");
+                    return modelLower.Contains("imagen") || modelLower.Contains("-image");
                 default:
                     return false;
             }
+        }
+
+        internal static bool IsExcludedModel(string modelId)
+        {
+            return modelId.Equals("openai/gpt-5.4-image-2", System.StringComparison.OrdinalIgnoreCase)
+                || modelId.StartsWith("google/gemini-2.", System.StringComparison.OrdinalIgnoreCase)
+                || modelId.StartsWith("gemini-2.", System.StringComparison.OrdinalIgnoreCase);
         }
     }
 

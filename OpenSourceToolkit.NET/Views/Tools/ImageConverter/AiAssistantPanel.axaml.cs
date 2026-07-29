@@ -1,3 +1,4 @@
+﻿using System;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -66,12 +67,42 @@ namespace OpenSourceToolkit.NET.Views.Tools.ImageConverter
         /// </summary>
         private void OnMessageDoubleTapped(object sender, TappedEventArgs e)
         {
-            if (sender is Control control && 
+            CopyMessage(sender);
+        }
+
+        /// <summary>
+        /// Handles the visible per-message copy action.
+        /// </summary>
+        private void OnCopyMessageClicked(object sender, RoutedEventArgs e)
+        {
+            CopyMessage(sender);
+        }
+
+        /// <summary>
+        /// Handles the visible per-message delete action.
+        /// </summary>
+        private void OnDeleteMessageClicked(object sender, RoutedEventArgs e)
+        {
+            if (sender is Control control &&
                 control.Tag is ChatMessageItem message &&
                 DataContext is AiAssistantViewModel vm)
             {
-                vm.CopyMessageCommand?.Execute(message);
+                vm.DeleteMessageCommand.Execute(message);
             }
+        }
+
+        private void CopyMessage(object sender)
+        {
+            if (sender is Control control &&
+                control.Tag is ChatMessageItem message &&
+                DataContext is AiAssistantViewModel vm)
+                vm.CopyMessageCommand.Execute(message);
+        }
+
+        private void OnOpenSettingsClicked(object sender, RoutedEventArgs e)
+        {
+            if (TopLevel.GetTopLevel(this) is global::OpenSourceToolkit.NET.Views.MainWindow mainWindow)
+                mainWindow.OpenSettings(global::OpenSourceToolkit.NET.Views.SettingsSection.AiProviders);
         }
     }
 }

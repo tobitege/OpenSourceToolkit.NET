@@ -4,23 +4,87 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:imgvm="using:OpenSourceToolkit.NET.ViewModels.Tools.ImageConverter"
              xmlns:models="using:OpenSourceToolkit.NET.ViewModels.Tools.ImageConverter.Models"
+             xmlns:converters="using:OpenSourceToolkit.NET.Converters"
              xmlns:daisy="clr-namespace:Flowery.Controls;assembly=Flowery.NET"
+             xmlns:services="clr-namespace:Flowery.Services;assembly=Flowery.NET"
              mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="500"
              x:Class="OpenSourceToolkit.NET.Views.Tools.ImageConverter.AiAssistantPanel"
              x:DataType="imgvm:AiAssistantViewModel">
+
+    <UserControl.Resources>
+        <converters:SubtractDoubleConverter x:Key="SubtractDoubleConverter"/>
+        <DataTemplate x:Key="ChatMessageActionsTemplate" x:DataType="models:ChatMessageItem">
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Spacing="2"
+                        Margin="0,4,0,0">
+                <daisy:DaisyButton Size="ExtraSmall"
+                                   Shape="Square"
+                                   Variant="Ghost"
+                                   Click="OnCopyMessageClicked"
+                                   Tag="{Binding}"
+                                   ToolTip.Tip="Copy message"
+                                   AutomationProperties.Name="Copy message">
+                    <PathIcon Data="{StaticResource CopyIcon}" Width="11" Height="11"/>
+                </daisy:DaisyButton>
+                <daisy:DaisyButton Size="ExtraSmall"
+                                   Shape="Square"
+                                   Variant="Ghost"
+                                   Click="OnDeleteMessageClicked"
+                                   Tag="{Binding}"
+                                   ToolTip.Tip="Delete message"
+                                   AutomationProperties.Name="Delete message">
+                    <PathIcon Data="{StaticResource ClearIcon}"
+                              Foreground="{DynamicResource DaisyErrorBrush}"
+                              Width="11"
+                              Height="11"/>
+                </daisy:DaisyButton>
+            </StackPanel>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <UserControl.Styles>
+        <Style Selector="daisy|DaisyChatBubble /template/ Border#PART_Bubble">
+            <Setter Property="MaxWidth"
+                    Value="{Binding (services:FloweryResponsive.ResponsiveMaxWidth), RelativeSource={RelativeSource AncestorType=ScrollViewer}}"/>
+        </Style>
+        <Style Selector="daisy|DaisyChatBubble /template/ Border#PART_Bubble > ContentPresenter">
+            <Setter Property="MaxWidth"
+                    Value="{Binding (services:FloweryResponsive.ResponsiveMaxWidth), RelativeSource={RelativeSource AncestorType=ScrollViewer}, Converter={StaticResource SubtractDoubleConverter}, ConverterParameter=32}"/>
+        </Style>
+        <Style Selector="daisy|DaisyChatBubble.compact-user-message /template/ Border#PART_Bubble > ContentPresenter">
+            <Setter Property="MaxWidth"
+                    Value="{Binding (services:FloweryResponsive.ResponsiveMaxWidth), RelativeSource={RelativeSource AncestorType=ScrollViewer}, Converter={StaticResource SubtractDoubleConverter}, ConverterParameter=16}"/>
+        </Style>
+    </UserControl.Styles>
 
     <!-- AI Assistant Panel - extracted from ImageConverterToolView for maintainability -->
     <Grid RowDefinitions="Auto,Auto,*,Auto">
         <!-- Row 0: Header with Connection Dropdown -->
         <StackPanel Grid.Row="0" Spacing="8">
-            <TextBlock Text="AI Assistant" FontWeight="Bold" FontSize="14"/>
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="AI Assistant"
+                           FontWeight="Bold"
+                           FontSize="14"
+                           VerticalAlignment="Center"/>
+                <daisy:DaisyButton Grid.Column="1"
+                                   Size="Small"
+                                   Shape="Square"
+                                   Variant="Ghost"
+                                   Click="OnOpenSettingsClicked"
+                                   ToolTip.Tip="Open Settings"
+                                   AutomationProperties.Name="Open AI settings">
+                    <PathIcon Data="{StaticResource SettingsIcon}" Width="14" Height="14"/>
+                </daisy:DaisyButton>
+            </Grid>
 
             <!-- Connection Dropdown -->
             <StackPanel Spacing="5">
                 <TextBlock Text="Connection" FontSize="11" Opacity="0.7"/>
                 <ComboBox ItemsSource="{Binding AiConnectionNames}"
                           SelectedItem="{Binding SelectedAiConnection}"
-                          HorizontalAlignment="Stretch"/>
+                          HorizontalAlignment="Stretch"
+                          AutomationProperties.AutomationId="AiApiConnection"/>
             </StackPanel>
 
             <!-- Image Generation Options (visible when connection supports it) -->
@@ -93,7 +157,9 @@
                 Background="{DynamicResource DaisyBase100Brush}">
             <ScrollViewer x:Name="ChatScrollViewer"
                           VerticalScrollBarVisibility="Auto"
-                          HorizontalScrollBarVisibility="Disabled">
+                          HorizontalScrollBarVisibility="Disabled"
+                          services:FloweryResponsive.IsEnabled="True"
+                          services:FloweryResponsive.BaseMaxWidth="400">
                 <!-- Empty state when no messages -->
                 <Panel>
                     <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8"
@@ -116,19 +182,35 @@
                             <DataTemplate x:DataType="models:ChatMessageItem">
                                 <Panel>
                                     <!-- User messages (right-aligned, Primary variant) -->
-                                    <daisy:DaisyChatBubble 
-                                        IsEnd="True"
-                                        Variant="Primary"
-                                        Content="{Binding Content}"
-                                        Footer="{Binding Timestamp, StringFormat='{}{0:HH:mm}'}"
-                                        IsVisible="{Binding Role, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static models:ChatMessageRole.User}}"
-                                        DoubleTapped="OnMessageDoubleTapped" Tag="{Binding}"/>
+                                    <StackPanel HorizontalAlignment="Right"
+                                        MaxWidth="{Binding (services:FloweryResponsive.ResponsiveMaxWidth), RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
+                                        IsVisible="{Binding Role, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static models:ChatMessageRole.User}}">
+                                        <daisy:DaisyChatBubble
+                                            Classes="compact-user-message"
+                                            IsEnd="True"
+                                            Variant="Primary"
+                                            Padding="8"
+                                            MaxWidth="{Binding (services:FloweryResponsive.ResponsiveMaxWidth), RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
+                                            DoubleTapped="OnMessageDoubleTapped" Tag="{Binding}">
+                                            <Grid RowDefinitions="Auto,Auto">
+                                                <TextBlock Text="{Binding Content}" TextWrapping="Wrap"/>
+                                                <ContentControl Grid.Row="1"
+                                                                Content="{Binding}"
+                                                                ContentTemplate="{StaticResource ChatMessageActionsTemplate}"/>
+                                            </Grid>
+                                        </daisy:DaisyChatBubble>
+                                        <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:HH:mm}'}"
+                                                   FontSize="10"
+                                                   Opacity="0.5"
+                                                   Margin="0,4,0,0"
+                                                   HorizontalAlignment="Right"/>
+                                    </StackPanel>
                                     
                                     <!-- AI messages (left-aligned, Default variant) - only when NOT success -->
                                     <daisy:DaisyChatBubble 
                                         IsEnd="False"
                                         Header="AI"
-                                        Content="{Binding Content}"
+                                        MaxWidth="{Binding (services:FloweryResponsive.ResponsiveMaxWidth), RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
                                         Footer="{Binding Footer}"
                                         DoubleTapped="OnMessageDoubleTapped" Tag="{Binding}">
                                         <daisy:DaisyChatBubble.IsVisible>
@@ -137,6 +219,12 @@
                                                 <Binding Path="!IsSuccess"/>
                                             </MultiBinding>
                                         </daisy:DaisyChatBubble.IsVisible>
+                                        <Grid RowDefinitions="Auto,Auto">
+                                            <TextBlock Text="{Binding Content}" TextWrapping="Wrap"/>
+                                            <ContentControl Grid.Row="1"
+                                                            Content="{Binding}"
+                                                            ContentTemplate="{StaticResource ChatMessageActionsTemplate}"/>
+                                        </Grid>
                                     </daisy:DaisyChatBubble>
                                     
                                     <!-- System messages: Error (left, Error variant) -->
@@ -144,7 +232,7 @@
                                         IsEnd="False"
                                         Variant="Error"
                                         Header="Error"
-                                        Content="{Binding Content}"
+                                        MaxWidth="{Binding (services:FloweryResponsive.ResponsiveMaxWidth), RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
                                         Footer="{Binding Timestamp, StringFormat='{}{0:HH:mm}'}"
                                         DoubleTapped="OnMessageDoubleTapped" Tag="{Binding}">
                                         <daisy:DaisyChatBubble.IsVisible>
@@ -153,6 +241,22 @@
                                                 <Binding Path="Role" Converter="{x:Static ObjectConverters.Equal}" ConverterParameter="{x:Static models:ChatMessageRole.System}"/>
                                             </MultiBinding>
                                         </daisy:DaisyChatBubble.IsVisible>
+                                        <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
+                                            <TextBox Text="{Binding Content}"
+                                                     IsReadOnly="True"
+                                                     AcceptsReturn="True"
+                                                     TextWrapping="Wrap"
+                                                     MaxHeight="180"
+                                                     Padding="0"
+                                                     BorderThickness="0"
+                                                     Background="Transparent"
+                                                     Foreground="{DynamicResource DaisyErrorContentBrush}"
+                                                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                                     ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+                                            <ContentControl Grid.Row="1"
+                                                            Content="{Binding}"
+                                                            ContentTemplate="{StaticResource ChatMessageActionsTemplate}"/>
+                                        </Grid>
                                     </daisy:DaisyChatBubble>
                                     
                                     <!-- System messages: Cancelled (left, Warning variant) -->
@@ -160,7 +264,7 @@
                                         IsEnd="False"
                                         Variant="Warning"
                                         Header="Cancelled"
-                                        Content="{Binding Content}"
+                                        MaxWidth="{Binding (services:FloweryResponsive.ResponsiveMaxWidth), RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
                                         Footer="{Binding Timestamp, StringFormat='{}{0:HH:mm}'}"
                                         DoubleTapped="OnMessageDoubleTapped" Tag="{Binding}">
                                         <daisy:DaisyChatBubble.IsVisible>
@@ -169,13 +273,19 @@
                                                 <Binding Path="Role" Converter="{x:Static ObjectConverters.Equal}" ConverterParameter="{x:Static models:ChatMessageRole.System}"/>
                                             </MultiBinding>
                                         </daisy:DaisyChatBubble.IsVisible>
+                                        <Grid RowDefinitions="Auto,Auto">
+                                            <TextBlock Text="{Binding Content}" TextWrapping="Wrap"/>
+                                            <ContentControl Grid.Row="1"
+                                                            Content="{Binding}"
+                                                            ContentTemplate="{StaticResource ChatMessageActionsTemplate}"/>
+                                        </Grid>
                                     </daisy:DaisyChatBubble>
                                     
                                     <!-- System messages: Success (left, Success variant) -->
                                     <daisy:DaisyChatBubble 
                                         IsEnd="False"
                                         Variant="Success"
-                                        Content="{Binding Content}"
+                                        MaxWidth="{Binding (services:FloweryResponsive.ResponsiveMaxWidth), RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
                                         Footer="{Binding Timestamp, StringFormat='{}{0:HH:mm}'}"
                                         DoubleTapped="OnMessageDoubleTapped" Tag="{Binding}">
                                         <daisy:DaisyChatBubble.IsVisible>
@@ -184,6 +294,12 @@
                                                 <Binding Path="Role" Converter="{x:Static ObjectConverters.Equal}" ConverterParameter="{x:Static models:ChatMessageRole.Assistant}"/>
                                             </MultiBinding>
                                         </daisy:DaisyChatBubble.IsVisible>
+                                        <Grid RowDefinitions="Auto,Auto">
+                                            <TextBlock Text="{Binding Content}" TextWrapping="Wrap"/>
+                                            <ContentControl Grid.Row="1"
+                                                            Content="{Binding}"
+                                                            ContentTemplate="{StaticResource ChatMessageActionsTemplate}"/>
+                                        </Grid>
                                     </daisy:DaisyChatBubble>
                                 </Panel>
                             </DataTemplate>
@@ -210,6 +326,7 @@
             </TextBox>
             <daisy:DaisyCheckBox Content="Send current image?" 
                                   IsChecked="{Binding SendWorkspaceImage}"
+                                  IsVisible="{Binding IsApiMode}"
                                   ToolTip.Tip="Include workspace image with AI request"
                                   Size="Small"
                                   Margin="0,2,0,0"/>

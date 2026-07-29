@@ -1,8 +1,7 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 using OpenSourceToolkit.NET.Services.Ai;
 
 namespace OpenSourceToolkit.NET.Services
@@ -14,6 +13,9 @@ namespace OpenSourceToolkit.NET.Services
             "OpenSourceToolkit.NET",
             "settings.json"
         );
+        private static readonly SettingsFileStore SettingsStore = new SettingsFileStore(
+            SettingsPath,
+            @"Local\OpenSourceToolkit.NET.Settings.v1");
 
         private static SettingsData _settings;
         private static AiSettingsManager _aiManager;
@@ -49,27 +51,27 @@ namespace OpenSourceToolkit.NET.Services
             try
             {
                 System.Diagnostics.Debug.WriteLine($"[AppSettings.Load] Reading from: {SettingsPath}");
-                if (File.Exists(SettingsPath))
-                {
-                    var json = File.ReadAllText(SettingsPath);
-                    System.Diagnostics.Debug.WriteLine($"[AppSettings.Load] File exists, length: {json.Length}");
-                    _settings = JsonSerializer.Deserialize<SettingsData>(json) ?? new SettingsData();
-                    System.Diagnostics.Debug.WriteLine($"[AppSettings.Load] DaisyUiTheme after load: '{_settings.DaisyUiTheme}'");
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($"[AppSettings.Load] File does not exist, creating defaults");
-                    _settings = CreateDefaultSettings();
-                }
-
-                // Sync AI manager from loaded settings and migrate if needed
-                if (_aiManager != null)
-                    SyncAiManagerFromSettings();
+                _settings = SettingsStore.Load(CreateDefaultSettings);
+                System.Diagnostics.Debug.WriteLine($"[AppSettings.Load] DaisyUiTheme after load: '{_settings.DaisyUiTheme}'");
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[AppSettings.Load] ERROR: {ex.Message}");
-                _settings = new SettingsData();
+                _settings = CreateDefaultSettings();
+                return;
+            }
+
+            // A provider-specific sync failure must never discard settings that were loaded successfully.
+            if (_aiManager != null)
+            {
+                try
+                {
+                    SyncAiManagerFromSettings();
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[AppSettings.Load] AI sync error: {ex.Message}");
+                }
             }
         }
 
@@ -178,14 +180,10 @@ namespace OpenSourceToolkit.NET.Services
                 if (_aiManager != null)
                     SyncSettingsFromAiManager();
 
-                var dir = Path.GetDirectoryName(SettingsPath);
-                if (!Directory.Exists(dir))
-                    Directory.CreateDirectory(dir);
-
-                var json = JsonSerializer.Serialize(_settings, new JsonSerializerOptions { WriteIndented = true });
-                File.WriteAllText(SettingsPath, json);
-                
-                System.Diagnostics.Debug.WriteLine($"[AppSettings.Save] Saved to: {SettingsPath}");
+                if (SettingsStore.Save(_settings))
+                    System.Diagnostics.Debug.WriteLine($"[AppSettings.Save] Saved to: {SettingsPath}");
+                else
+                    System.Diagnostics.Debug.WriteLine("[AppSettings.Save] Skipped because settings were changed by another process.");
             }
             catch (Exception ex)
             {
@@ -254,6 +252,8 @@ namespace OpenSourceToolkit.NET.Services
 
     public class SettingsData
     {
+        public int SettingsSchemaVersion { get; set; } = 1;
+
         // Audio Noise Reduction settings
         public string AudioInputDeviceName { get; set; }
         public string AudioExportFormat { get; set; } = "WAV";
@@ -333,6 +333,8 @@ namespace OpenSourceToolkit.NET.Services
 
     public class AiSettingsData
     {
+        public AiAccessMode? OpenAiAccessMode { get; set; }
+
         // Provider API keys (one per provider type)
         public List<AiProviderApiKey> ProviderApiKeys { get; set; } = new List<AiProviderApiKey>();
 

@@ -1,5 +1,7 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
+using System.Text.Json;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenSourceToolkit.NET.Services.Ai;
 
@@ -89,6 +91,19 @@ namespace OpenSourceToolkit.Tests
             manager.ResetProviderModels("OpenAI");
             var reset = manager.GetProviderModels("OpenAI");
             Assert.IsFalse(reset.Contains("custom-gpt"));
+
+            manager.SetProviderModels("OpenRouter", new List<string>
+            {
+                "openai/gpt-5.4-image-2",
+                "google/gemini-2.5-flash-image",
+                "google/gemini-2.5-pro",
+                "google/gemini-3.1-flash-image"
+            });
+            var filtered = manager.GetProviderModels("OpenRouter");
+            Assert.IsFalse(filtered.Contains("openai/gpt-5.4-image-2"));
+            Assert.IsFalse(filtered.Contains("google/gemini-2.5-flash-image"));
+            Assert.IsFalse(filtered.Contains("google/gemini-2.5-pro"));
+            Assert.IsTrue(filtered.Contains("google/gemini-3.1-flash-image"));
         }
 
         [TestMethod]
@@ -103,6 +118,10 @@ namespace OpenSourceToolkit.Tests
             var google = AiConnectionConfig.CreateDefault(AiProviderType.Google);
             Assert.AreEqual("https://generativelanguage.googleapis.com/v1beta", google.Endpoint);
 
+            var huggingFace = AiConnectionConfig.CreateDefault(AiProviderType.HuggingFace);
+            Assert.AreEqual("https://router.huggingface.co/v1", huggingFace.Endpoint);
+            Assert.AreEqual("openai/gpt-oss-120b", huggingFace.ModelId);
+
             var ollama = AiConnectionConfig.CreateDefault(AiProviderType.Ollama);
             Assert.AreEqual("http://localhost:11434", ollama.Endpoint);
         }
@@ -110,14 +129,141 @@ namespace OpenSourceToolkit.Tests
         [TestMethod]
         public void AiConnectionConfig_IsImageGenerationModel_DetectsCorrectly()
         {
-            Assert.IsTrue(AiConnectionConfig.IsImageGenerationModel(AiProviderType.OpenAI, "gpt-image-1"));
+            Assert.IsTrue(AiConnectionConfig.IsImageGenerationModel(AiProviderType.OpenAI, "gpt-image-2"));
             Assert.IsFalse(AiConnectionConfig.IsImageGenerationModel(AiProviderType.OpenAI, "gpt-4o"));
 
-            Assert.IsTrue(AiConnectionConfig.IsImageGenerationModel(AiProviderType.OpenRouter, "google/gemini-2.5-flash-image"));
-            Assert.IsTrue(AiConnectionConfig.IsImageGenerationModel(AiProviderType.OpenRouter, "black-forest-labs/flux-pro"));
+            Assert.IsTrue(AiConnectionConfig.IsImageGenerationModel(AiProviderType.OpenRouter, "google/gemini-3.1-flash-image"));
+            Assert.IsTrue(AiConnectionConfig.IsImageGenerationModel(AiProviderType.OpenRouter, "black-forest-labs/flux.2-pro"));
+            Assert.IsTrue(AiConnectionConfig.IsImageGenerationModel(AiProviderType.OpenRouter, "krea/krea-1"));
+            Assert.IsTrue(AiConnectionConfig.IsImageGenerationModel(AiProviderType.OpenRouter, "vendor/custom-image-generator"));
+            Assert.IsTrue(AiConnectionConfig.IsImageGenerationModel(AiProviderType.OpenRouter, "recraft/recraft-v4"));
+            Assert.IsFalse(AiConnectionConfig.IsImageGenerationModel(AiProviderType.OpenRouter, "anthropic/claude-sonnet-4.5"));
+            Assert.IsFalse(AiConnectionConfig.IsImageGenerationModel(AiProviderType.OpenRouter, "openai/gpt-5.4-image-2"));
+            Assert.IsFalse(AiConnectionConfig.IsImageGenerationModel(AiProviderType.OpenRouter, "google/gemini-2.5-flash-image"));
 
-            Assert.IsTrue(AiConnectionConfig.IsImageGenerationModel(AiProviderType.Google, "imagen-3.0-generate-002"));
+            Assert.IsTrue(AiConnectionConfig.IsImageGenerationModel(AiProviderType.Google, "gemini-3.1-flash-image"));
             Assert.IsFalse(AiConnectionConfig.IsImageGenerationModel(AiProviderType.Google, "gemini-2.5-pro"));
+            Assert.IsFalse(AiConnectionConfig.IsImageGenerationModel(AiProviderType.Google, "gemini-2.5-flash-image"));
+
+            Assert.IsTrue(AiConnectionConfig.IsImageGenerationModel(
+                AiProviderType.HuggingFace,
+                "stabilityai/stable-diffusion-3-medium-diffusers"));
+            Assert.IsTrue(AiConnectionConfig.IsImageGenerationModel(
+                AiProviderType.HuggingFace,
+                "stabilityai/sdxl-turbo"));
+            Assert.IsFalse(AiConnectionConfig.IsImageGenerationModel(
+                AiProviderType.HuggingFace,
+                "openai/gpt-oss-120b"));
+        }
+
+        [TestMethod]
+        public void AiConnectionConfig_DefaultImageModels_ExcludeRetiredModels()
+        {
+            var openRouterModels = AiConnectionConfig.GetDefaultImageModels(AiProviderType.OpenRouter);
+            CollectionAssert.DoesNotContain(openRouterModels, "openai/gpt-5.4-image-2");
+            CollectionAssert.DoesNotContain(openRouterModels, "google/gemini-2.5-flash-image");
+
+            var googleModels = AiConnectionConfig.GetDefaultImageModels(AiProviderType.Google);
+            CollectionAssert.DoesNotContain(googleModels, "gemini-2.5-flash-image");
+
+            CollectionAssert.Contains(AiSettingsManager.SupportedProviders, "HuggingFace");
+            CollectionAssert.Contains(AiSettingsManager.SupportedConnectionProviders, "Codex");
+            CollectionAssert.DoesNotContain(AiSettingsManager.SupportedProviders, "Codex");
+            var huggingFaceModels = AiConnectionConfig.GetDefaultImageModels(AiProviderType.HuggingFace);
+            CollectionAssert.Contains(
+                huggingFaceModels,
+                "stabilityai/stable-diffusion-3-medium-diffusers");
+        }
+
+        [TestMethod]
+        public void OpenRouterImagePayload_UsesGeminiCapabilitiesWithoutChatParameters()
+        {
+            var createPayload = GetOpenRouterImagePayloadFactory();
+            var supportedParameters = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "resolution",
+                "aspect_ratio",
+                "input_references"
+            };
+            var inputImages = new List<(byte[] Data, string MimeType)>
+            {
+                (new byte[] { 1, 2, 3 }, "image/png")
+            };
+
+            var payload = (Dictionary<string, object>)createPayload.Invoke(
+                null,
+                new object[]
+                {
+                    "google/gemini-3.1-flash-image",
+                    "A hot cup of coffee",
+                    "1024x1024",
+                    "auto",
+                    inputImages,
+                    supportedParameters
+                });
+
+            using var document = JsonDocument.Parse(JsonSerializer.Serialize(payload));
+            var root = document.RootElement;
+
+            Assert.AreEqual("google/gemini-3.1-flash-image", root.GetProperty("model").GetString());
+            Assert.AreEqual("A hot cup of coffee", root.GetProperty("prompt").GetString());
+            Assert.AreEqual("1K", root.GetProperty("resolution").GetString());
+            Assert.AreEqual("1:1", root.GetProperty("aspect_ratio").GetString());
+            Assert.IsFalse(root.TryGetProperty("quality", out _));
+            Assert.IsFalse(root.TryGetProperty("max_tokens", out _));
+            Assert.IsFalse(root.TryGetProperty("temperature", out _));
+            Assert.IsFalse(root.TryGetProperty("modalities", out _));
+            Assert.AreEqual(
+                "data:image/png;base64,AQID",
+                root.GetProperty("input_references")[0]
+                    .GetProperty("image_url")
+                    .GetProperty("url")
+                    .GetString());
+        }
+
+        [TestMethod]
+        public void OpenRouterImagePayload_IncludesOnlyAdvertisedOptionalSettings()
+        {
+            var createPayload = GetOpenRouterImagePayloadFactory();
+            var supportedParameters = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "size",
+                "quality"
+            };
+
+            var payload = (Dictionary<string, object>)createPayload.Invoke(
+                null,
+                new object[]
+                {
+                    "openai/gpt-image-2",
+                    "A landscape",
+                    "1536x1024",
+                    "high",
+                    new List<(byte[] Data, string MimeType)>(),
+                    supportedParameters
+                });
+
+            using var document = JsonDocument.Parse(JsonSerializer.Serialize(payload));
+            var root = document.RootElement;
+
+            Assert.AreEqual("1536x1024", root.GetProperty("size").GetString());
+            Assert.AreEqual("high", root.GetProperty("quality").GetString());
+            Assert.IsFalse(root.TryGetProperty("resolution", out _));
+            Assert.IsFalse(root.TryGetProperty("aspect_ratio", out _));
+            Assert.IsFalse(root.TryGetProperty("input_references", out _));
+        }
+
+        private static MethodInfo GetOpenRouterImagePayloadFactory()
+        {
+            var clientType = typeof(AiConnectionConfig).Assembly.GetType(
+                "OpenSourceToolkit.NET.Services.Ai.OpenRouterImageApiClient");
+            Assert.IsNotNull(clientType);
+
+            var createPayload = clientType.GetMethod(
+                "CreatePayload",
+                BindingFlags.Static | BindingFlags.NonPublic);
+            Assert.IsNotNull(createPayload);
+            return createPayload;
         }
 
         [TestMethod]
@@ -178,6 +324,32 @@ namespace OpenSourceToolkit.Tests
             Assert.AreEqual("gpt-4o", config.ModelId);
             Assert.AreEqual(16000, config.MaxTokens);
             Assert.AreEqual(0.3, config.Temperature, 0.001);
+        }
+
+        [TestMethod]
+        public void AiSettingsManager_OpenAICompatibleConnection_PreservesEndpointAndOptionalKey()
+        {
+            var storage = new MockSecretStorage();
+            var manager = new AiSettingsManager(storage);
+            var connection = manager.AddConnection(
+                "Local gateway",
+                "OpenAI-Compatible",
+                "custom-model",
+                customEndpoint: "http://localhost:8080/v1");
+
+            var config = manager.CreateConfigFromConnection(connection.Id);
+
+            Assert.IsNotNull(config);
+            Assert.AreEqual(AiProviderType.OpenAICompatible, config.ProviderType);
+            Assert.AreEqual("http://localhost:8080/v1", config.Endpoint);
+            Assert.AreEqual("custom-model", config.ModelId);
+            Assert.IsNull(config.ApiKey);
+            CollectionAssert.Contains(
+                AiSettingsManager.SupportedConnectionProviders,
+                "OpenAI-Compatible");
+            CollectionAssert.DoesNotContain(
+                AiSettingsManager.SupportedProviders,
+                "OpenAI-Compatible");
         }
     }
 }

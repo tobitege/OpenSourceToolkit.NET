@@ -1,4 +1,4 @@
-#nullable enable
+﻿#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +8,7 @@ using Avalonia.Interactivity;
 using Avalonia.Styling;
 using Flowery.Controls;
 using Flowery.Localization;
+using Flowery.Services;
 using OpenSourceToolkit.NET.Data;
 using OpenSourceToolkit.NET.Helpers;
 using OpenSourceToolkit.NET.Localization;
@@ -43,6 +44,14 @@ namespace OpenSourceToolkit.NET.Views
         /// Reference to the Favorites category for dynamic population.
         /// </summary>
         private SidebarCategory? _favoritesCategory;
+
+        /// <summary>
+        /// Last sidebar item that represents application content. Administrative and
+        /// selector items must not replace the startup selection.
+        /// </summary>
+        private SidebarItem? _lastRememberedSidebarItem;
+
+        private const string SidebarStateKey = "sidebar";
 
         public MainWindow()
         {
@@ -91,15 +100,48 @@ namespace OpenSourceToolkit.NET.Views
             if (lastItemId != null && category != null)
             {
                 var item = category.Items.FirstOrDefault(i => i.Id == lastItemId);
-                if (item != null)
+                if (item != null && ShouldRememberSidebarItem(item))
                 {
+                    _lastRememberedSidebarItem = item;
                     NavigateToItem(item);
                     return;
                 }
             }
 
-            // Default: show home
+            // Default to Home, including when an older version persisted Settings.
+            var homeItem = FindSidebarItem("welcome");
+            if (homeItem != null)
+            {
+                _lastRememberedSidebarItem = homeItem;
+                RestoreSidebarSelection(homeItem);
+            }
+
             _viewModel.GoHome();
+        }
+
+        private SidebarItem? FindSidebarItem(string itemId)
+        {
+            return ComponentSidebar.Categories
+                .SelectMany(category => category.Items)
+                .FirstOrDefault(item => string.Equals(item.Id, itemId, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private static bool ShouldRememberSidebarItem(SidebarItem item)
+        {
+            return item is not ToolkitSettingsItem and
+                   not ToolkitThemeSelectorItem and
+                   not ToolkitLanguageSelectorItem;
+        }
+
+        private void RestoreSidebarSelection(SidebarItem item)
+        {
+            ComponentSidebar.SelectedItem = item;
+
+            var state = new List<string> { $"last:{item.Id}" };
+            state.AddRange(ComponentSidebar.Categories
+                .Where(category => !category.IsExpanded)
+                .Select(category => $"collapsed:{category.Name}"));
+            StateStorageProvider.Instance.SaveLines(SidebarStateKey, state);
         }
 
         /// <summary>
@@ -389,10 +431,30 @@ namespace OpenSourceToolkit.NET.Views
 
         private void ComponentSidebar_ItemSelected(object? sender, SidebarItemSelectedEventArgs e)
         {
-            if (e.Item != null)
+            if (e.Item == null)
             {
-                NavigateToItem(e.Item);
+                return;
             }
+
+            if (e.Item is ToolkitSettingsItem)
+            {
+                var itemToRestore = _lastRememberedSidebarItem ?? FindSidebarItem("welcome");
+                if (itemToRestore != null)
+                {
+                    _lastRememberedSidebarItem = itemToRestore;
+                    RestoreSidebarSelection(itemToRestore);
+                }
+
+                OpenSettings();
+                return;
+            }
+
+            if (ShouldRememberSidebarItem(e.Item))
+            {
+                _lastRememberedSidebarItem = e.Item;
+            }
+
+            NavigateToItem(e.Item);
         }
 
         private void NavigateToItem(SidebarItem item)
@@ -424,9 +486,9 @@ namespace OpenSourceToolkit.NET.Views
             }
         }
 
-        private async void OpenSettings()
+        internal async void OpenSettings(SettingsSection initialSection = SettingsSection.General)
         {
-            var settingsWindow = new SettingsWindow();
+            var settingsWindow = new SettingsWindow(initialSection);
             await settingsWindow.ShowDialog(this);
 
             // Notify all subscribed tools that settings have changed

@@ -4,10 +4,10 @@ A .NET Standard 2.0 library providing a unified abstraction layer for multiple A
 
 ## Features
 
-- **Multi-provider support**: OpenAI, OpenRouter, Anthropic (Claude), Google (Gemini), Ollama, LM Studio
+- **Multi-provider support**: OpenAI, OpenRouter, Hugging Face, Anthropic (Claude), Google (Gemini), Ollama, LM Studio
 - **Unified API**: Single interface for all providers
 - **Multi-modal support**: Text and image inputs
-- **Image generation**: OpenAI (gpt-image-1), OpenRouter (Gemini/FLUX), Google (Imagen)
+- **Image generation**: OpenAI, OpenRouter, Hugging Face Inference, and Google
 - **Streaming**: Callback-based streaming for real-time responses (C# 7.3 compatible)
 - **Secure error handling**: API keys are automatically redacted from error messages
 - **Connection management**: Named connections with per-connection or per-provider API keys
@@ -16,7 +16,7 @@ A .NET Standard 2.0 library providing a unified abstraction layer for multiple A
 
 ```txt
 OpenSourceToolkit.AI/
-├── AiProviderType.cs          # Enum: OpenAI, OpenRouter, Anthropic, Google, Ollama, LMStudio
+├── AiProviderType.cs          # Enum: OpenAI, OpenRouter, HuggingFace, Anthropic, Google, Ollama, LMStudio
 ├── IAiProvider.cs             # Provider interface
 ├── IAiService.cs              # High-level service interface
 ├── AiService.cs               # Service implementation with secure error handling
@@ -32,6 +32,7 @@ OpenSourceToolkit.AI/
 └── Providers/
     ├── BaseProvider.cs            # Abstract base with HttpClient, JSON helpers
     ├── OpenAiCompatibleProvider.cs # OpenAI, OpenRouter, LM Studio
+    ├── HuggingFaceProvider.cs     # HF chat router and HF-Inference image generation
     ├── AnthropicProvider.cs       # Anthropic Claude API
     ├── GoogleProvider.cs          # Google Gemini API
     └── OllamaProvider.cs          # Local Ollama API
@@ -113,10 +114,10 @@ if (response.IsSuccess && response.Images.Count > 0)
     File.WriteAllBytes("generated.png", imageData);
 }
 
-// OpenAI gpt-image-1 with full control
+// OpenAI gpt-image-2 with full control
 var request = new ImageGenerationRequest("A futuristic city")
 {
-    Model = "gpt-image-1",
+    Model = "gpt-image-2",
     Size = "1536x1024",           // Landscape
     Quality = "high",             // high/medium/low/auto
     Background = "transparent",   // transparent/opaque/auto
@@ -125,7 +126,7 @@ var request = new ImageGenerationRequest("A futuristic city")
 };
 var response = await service.GenerateImageAsync(request);
 
-// Check token usage (gpt-image-1 only)
+// Check token usage
 if (response.TotalTokens.HasValue)
 {
     Console.WriteLine($"Tokens: {response.InputTokens} in, {response.OutputTokens} out");
@@ -134,7 +135,7 @@ if (response.TotalTokens.HasValue)
 // OpenRouter with Gemini image model
 var request = new ImageGenerationRequest("A mountain landscape")
 {
-    Model = "google/gemini-2.5-flash-image",
+    Model = "google/gemini-3.1-flash-image",
     AspectRatio = "16:9"          // OpenRouter/Gemini aspect ratio
 };
 var response = await service.GenerateImageAsync(request);
@@ -149,7 +150,7 @@ When an input image is provided, OpenAI uses the `/images/edits` endpoint:
 byte[] sourceImage = File.ReadAllBytes("photo.png");
 var request = new ImageGenerationRequest("Add a rainbow to the sky")
 {
-    Model = "gpt-image-1",
+    Model = "gpt-image-2",
     InputImage = sourceImage,
     InputImageMimeType = "image/png",
     Size = "1024x1024",
@@ -185,44 +186,48 @@ catch (Exception ex)
 |----------|-------------|-----------|-----------|------------|----------|
 | OpenAI | ✓ | ✓ | ✓ | ✓ | api.openai.com/v1 |
 | OpenRouter | ✓ | ✓ | ✓ | ✓ | openrouter.ai/api/v1 |
+| Hugging Face | ✓ | ✓ | ✓ | ✗ | router.huggingface.co/v1 |
 | Anthropic | ✓ | ✓ | ✗ | ✗ | api.anthropic.com/v1 |
 | Google | ✓ | ✓ | ✓ | ✗ | generativelanguage.googleapis.com/v1beta |
 | Ollama | ✓ | ✓ | ✗ | ✗ | localhost:11434 |
 | LM Studio | ✓ | ✓ | ✗ | ✗ | localhost:1234/v1 |
 
-## Default Models (as of Nov 2025)
+## Default Models
 
-### Chat/Completion Models
+### Chat/Completion Models (as of Nov 2025)
 
 - **OpenAI**: gpt-5.1, gpt-4.1, gpt-4.1-mini, gpt-4o, o3, o1
-- **OpenRouter**: anthropic/claude-sonnet-4.5, anthropic/claude-opus-4.5, openai/gpt-5.1, google/gemini-3-pro-preview, google/gemini-2.5-pro-preview
+- **OpenRouter**: anthropic/claude-sonnet-4.5, anthropic/claude-opus-4.5, openai/gpt-5.1, google/gemini-3-pro-preview
+- **Hugging Face**: openai/gpt-oss-120b; the desktop app refreshes the full chat catalog from the HF router
 - **Anthropic**: claude-opus-4-5-20251101, claude-sonnet-4-5-20251022
-- **Google**: gemini-3-pro-preview, gemini-2.5-pro-preview-06-05, gemini-2.5-flash-preview-05-20
+- **Google**: gemini-3-pro-preview
 - **Ollama**: llama3.2, gemma2, mistral, llava
 - **LM Studio**: local-model
 
-### Image Generation Models
+### Image Generation Models (as of July 2026)
 
-- **OpenAI**: gpt-image-1-mini, gpt-image-1
-- **OpenRouter**: google/gemini-3-pro-image-preview, google/gemini-2.5-flash-image, black-forest-labs/flux.2-pro
-- **Google**: imagen-3.0-generate-002, imagen-3.0-fast-generate-001
+- **OpenAI**: gpt-image-2
+- **OpenRouter**: refreshed from OpenRouter's image-input/image-output models API, with current built-in fallbacks
+- **Hugging Face**: refreshed from the Hub API for models currently served by the `hf-inference` provider
+- **Google**: gemini-3.1-flash-image, gemini-3.1-flash-lite-image, gemini-3-pro-image
 
 ### Auto-Detection
 
 `AiProviderSettings.IsImageGenerationModel()` detects image models by name pattern:
 
 - OpenAI: contains "gpt-image"
-- OpenRouter: contains "-image" or "flux"
-- Google: contains "imagen"
+- OpenRouter: known image-model families plus the capability-filtered API catalog
+- Hugging Face: live HF-Inference image catalog plus Stable Diffusion, FLUX, and Qwen-Image naming patterns
+- Google: contains "imagen" or "-image"
 
 ## OpenAI Image API Parameters
 
 ### ImageGenerationRequest Properties
 
-| Property | Type | Description | gpt-image-1 |
+| Property | Type | Description | GPT Image |
 |----------|------|-------------|-------------|
 | `Prompt` | string | Text description (max 32000 chars) | ✓ |
-| `Model` | string | Model ID (e.g., "gpt-image-1") | ✓ |
+| `Model` | string | Model ID (e.g., "gpt-image-2") | ✓ |
 | `Size` | string | "1024x1024", "1536x1024", "1024x1536", "auto" | ✓ |
 | `Quality` | string | "high", "medium", "low", "auto" | ✓ |
 | `Count` | int | Number of images (1-10) | ✓ |
@@ -243,9 +248,9 @@ catch (Exception ex)
 | `ErrorMessage` | string | Error details if failed |
 | `Images` | List&lt;GeneratedImage&gt; | Generated images |
 | `RevisedPrompt` | string | AI-modified prompt (if any) |
-| `TotalTokens` | int? | Total tokens used (gpt-image-1) |
-| `InputTokens` | int? | Input/prompt tokens (gpt-image-1) |
-| `OutputTokens` | int? | Output/image tokens (gpt-image-1) |
+| `TotalTokens` | int? | Total tokens used |
+| `InputTokens` | int? | Input/prompt tokens |
+| `OutputTokens` | int? | Output/image tokens |
 
 ### OpenAI Endpoints Used
 

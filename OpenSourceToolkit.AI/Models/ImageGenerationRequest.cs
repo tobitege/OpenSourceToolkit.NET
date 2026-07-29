@@ -1,4 +1,4 @@
-namespace OpenSourceToolkit.AI.Models
+﻿namespace OpenSourceToolkit.AI.Models
 {
     /// <summary>
     /// Request for AI image generation
@@ -32,7 +32,7 @@ namespace OpenSourceToolkit.AI.Models
 
         /// <summary>
         /// Model to use for generation. If null, uses provider default.
-        /// OpenAI: "gpt-image-1", "gpt-image-1-mini"
+        /// OpenAI: "gpt-image-2"
         /// </summary>
         public string Model { get; set; }
 
@@ -43,23 +43,23 @@ namespace OpenSourceToolkit.AI.Models
         public string AspectRatio { get; set; }
 
         /// <summary>
-        /// Background transparency (gpt-image-1 only): "transparent", "opaque", or "auto"
+        /// Background transparency for GPT Image models: "transparent", "opaque", or "auto"
         /// If transparent, OutputFormat should be "png" or "webp".
         /// </summary>
         public string Background { get; set; }
 
         /// <summary>
-        /// Output format (gpt-image-1 only): "png", "jpeg", or "webp"
+        /// Output format for GPT Image models: "png", "jpeg", or "webp"
         /// </summary>
         public string OutputFormat { get; set; }
 
         /// <summary>
-        /// Compression level 0-100% (gpt-image-1 with webp/jpeg only). Default 100.
+        /// Compression level 0-100% for GPT Image models with webp/jpeg output. Default 100.
         /// </summary>
         public int? OutputCompression { get; set; }
 
         /// <summary>
-        /// Content moderation level (gpt-image-1 only): "low" or "auto"
+        /// Content moderation level for GPT Image models: "low" or "auto"
         /// </summary>
         public string Moderation { get; set; }
 

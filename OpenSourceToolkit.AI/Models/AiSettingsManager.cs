@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -274,11 +274,11 @@ namespace OpenSourceToolkit.AI.Models
         /// </summary>
         public List<string> GetProviderModels(string providerType)
         {
-            if (ProviderModels.TryGetValue(providerType, out var models) && models.Count > 0)
-                return new List<string>(models);
-
             var type = ParseProviderType(providerType);
-            return AiProviderSettings.GetDefaultModels(type);
+            if (ProviderModels.TryGetValue(providerType, out var models) && models.Count > 0)
+                return models.FindAll(model => !AiProviderSettings.IsExcludedModel(model));
+
+            return GetDefaultProviderModels(type);
         }
 
         /// <summary>
@@ -286,7 +286,7 @@ namespace OpenSourceToolkit.AI.Models
         /// </summary>
         public void SetProviderModels(string providerType, List<string> models)
         {
-            ProviderModels[providerType] = new List<string>(models);
+            ProviderModels[providerType] = models.FindAll(model => !AiProviderSettings.IsExcludedModel(model));
         }
 
         /// <summary>
@@ -295,7 +295,7 @@ namespace OpenSourceToolkit.AI.Models
         public void ResetProviderModels(string providerType)
         {
             var type = ParseProviderType(providerType);
-            ProviderModels[providerType] = AiProviderSettings.GetDefaultModels(type);
+            ProviderModels[providerType] = GetDefaultProviderModels(type);
         }
 
         /// <summary>
@@ -303,6 +303,9 @@ namespace OpenSourceToolkit.AI.Models
         /// </summary>
         public void AddProviderModel(string providerType, string modelId)
         {
+            if (AiProviderSettings.IsExcludedModel(modelId))
+                return;
+
             if (!ProviderModels.ContainsKey(providerType))
                 ProviderModels[providerType] = GetProviderModels(providerType);
 
@@ -386,6 +389,17 @@ namespace OpenSourceToolkit.AI.Models
             return AiProviderSettings.GetDefaultEndpoint(type);
         }
 
+        private static List<string> GetDefaultProviderModels(AiProviderType providerType)
+        {
+            var models = AiProviderSettings.GetDefaultModels(providerType);
+            foreach (var imageModel in AiProviderSettings.GetDefaultImageModels(providerType))
+            {
+                if (!models.Contains(imageModel))
+                    models.Add(imageModel);
+            }
+            return models;
+        }
+
         private static AiProviderType ParseProviderType(string providerType)
         {
             if (Enum.TryParse<AiProviderType>(providerType, out var result))
@@ -398,7 +412,7 @@ namespace OpenSourceToolkit.AI.Models
         /// </summary>
         public static readonly string[] SupportedProviders = new[]
         {
-            "OpenAI", "OpenRouter", "Anthropic", "Google", "Ollama", "LMStudio"
+            "OpenAI", "OpenRouter", "HuggingFace", "Anthropic", "Google", "Ollama", "LMStudio"
         };
 
         #endregion

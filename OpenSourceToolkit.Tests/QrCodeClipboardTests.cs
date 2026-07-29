@@ -1,4 +1,4 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenSourceToolkit.NET.ViewModels.Tools;
 using OpenSourceToolkit.NET.Views.Tools;
 using OpenSourceToolkit.TextData;
@@ -16,7 +16,9 @@ namespace OpenSourceToolkit.Tests
         {
             // Initialize basic Avalonia platform services so Bitmap constructor works
             AppBuilder.Configure<OpenSourceToolkit.NET.App>()
-                .UsePlatformDetect()
+                .UseWin32()
+                .UseSkia()
+                .UseHarfBuzz()
                 .SetupWithoutStarting();
         }
 

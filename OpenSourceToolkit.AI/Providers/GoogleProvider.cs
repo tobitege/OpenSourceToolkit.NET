@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
@@ -14,7 +14,7 @@ namespace OpenSourceToolkit.AI.Providers
         public override AiProviderType ProviderType => AiProviderType.Google;
         public override bool SupportsMultiModal => true;
         public override bool SupportsStreaming => true;
-        public override bool SupportsImageGeneration => true; // Google Imagen via Gemini API
+        public override bool SupportsImageGeneration => true; // Google Gemini image generation
 
         public GoogleProvider(AiProviderSettings settings) : base(settings)
         {
@@ -212,7 +212,97 @@ namespace OpenSourceToolkit.AI.Providers
 
         public override async Task<ImageGenerationResponse> GenerateImageAsync(ImageGenerationRequest request, CancellationToken cancellationToken = default)
         {
-            // Google Imagen API via Gemini endpoint
+            var model = string.IsNullOrWhiteSpace(request.Model)
+                ? "gemini-3.1-flash-image"
+                : request.Model;
+            if (!model.StartsWith("imagen", StringComparison.OrdinalIgnoreCase))
+                return await GenerateImageWithGeminiAsync(model, request, cancellationToken).ConfigureAwait(false);
+
+            return await GenerateImageWithImagenAsync(model, request, cancellationToken).ConfigureAwait(false);
+        }
+
+        private async Task<ImageGenerationResponse> GenerateImageWithGeminiAsync(
+            string model,
+            ImageGenerationRequest request,
+            CancellationToken cancellationToken)
+        {
+            var payload = new
+            {
+                contents = new[]
+                {
+                    new
+                    {
+                        role = "user",
+                        parts = new[] { new { text = request.Prompt } }
+                    }
+                },
+                generationConfig = new
+                {
+                    responseModalities = new[] { "TEXT", "IMAGE" },
+                    imageConfig = new { aspectRatio = ParseAspectRatio(request.Size) }
+                }
+            };
+
+            var endpoint = $"{Settings.Endpoint.TrimEnd('/')}/models/{model}:generateContent?key={Settings.ApiKey}";
+            using (var httpRequest = new HttpRequestMessage(HttpMethod.Post, endpoint))
+            {
+                httpRequest.Content = CreateJsonContent(payload);
+
+                using (var response = await HttpClient.SendAsync(httpRequest, cancellationToken).ConfigureAwait(false))
+                {
+                    var content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                    if (!response.IsSuccessStatusCode)
+                        return ImageGenerationResponse.Error($"HTTP {(int)response.StatusCode}: {content}");
+
+                    using (var doc = JsonDocument.Parse(content))
+                    {
+                        var images = new List<GeneratedImage>();
+                        if (doc.RootElement.TryGetProperty("candidates", out var candidates))
+                        {
+                            foreach (var candidate in candidates.EnumerateArray())
+                            {
+                                if (!candidate.TryGetProperty("content", out var candidateContent) ||
+                                    !candidateContent.TryGetProperty("parts", out var parts))
+                                {
+                                    continue;
+                                }
+
+                                foreach (var part in parts.EnumerateArray())
+                                {
+                                    if (!part.TryGetProperty("inlineData", out var inlineData) ||
+                                        !inlineData.TryGetProperty("data", out var dataElement))
+                                    {
+                                        continue;
+                                    }
+
+                                    var base64 = dataElement.GetString();
+                                    if (string.IsNullOrEmpty(base64))
+                                        continue;
+
+                                    var mimeType = inlineData.TryGetProperty("mimeType", out var mimeTypeElement)
+                                        ? mimeTypeElement.GetString()
+                                        : "image/png";
+
+                                    images.Add(new GeneratedImage
+                                    {
+                                        Data = Convert.FromBase64String(base64),
+                                        MimeType = mimeType ?? "image/png"
+                                    });
+                                }
+                            }
+                        }
+
+                        return ImageGenerationResponse.Success(images);
+                    }
+                }
+            }
+        }
+
+        private async Task<ImageGenerationResponse> GenerateImageWithImagenAsync(
+            string model,
+            ImageGenerationRequest request,
+            CancellationToken cancellationToken)
+        {
             var payload = new
             {
                 instances = new[]
@@ -226,9 +316,7 @@ namespace OpenSourceToolkit.AI.Providers
                 }
             };
 
-            // Use Imagen model for image generation
-            var imagenModel = "imagen-3.0-generate-001";
-            var endpoint = $"{Settings.Endpoint.TrimEnd('/')}/models/{imagenModel}:predict?key={Settings.ApiKey}";
+            var endpoint = $"{Settings.Endpoint.TrimEnd('/')}/models/{model}:predict?key={Settings.ApiKey}";
 
             using (var httpRequest = new HttpRequestMessage(HttpMethod.Post, endpoint))
             {

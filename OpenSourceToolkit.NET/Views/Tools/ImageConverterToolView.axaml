@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -71,14 +71,27 @@
                                           Command="{Binding SelectToolCategoryCommand}"
                                           CommandParameter="{x:Static vm:ImageToolCategory.AI}"
                                           ToolTip.Tip="{Binding Ai.AiButtonTooltip}"
+                                          ToolTip.ShowOnDisabled="True"
                                           Padding="8,6"
-                                          IsEnabled="{Binding Ai.HasAiConnections}">
+                                          IsEnabled="{Binding Ai.HasAiAccess}">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <PathIcon Data="{StaticResource AiIcon}" Width="16" Height="16"
                                               Foreground="{Binding Ai.AiIconColor}"/>
                                     <TextBlock Text="{loc:Localize Image_AIGen_Button}" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </ToggleButton>
+                            <daisy:DaisyButton Click="OnOpenAiSettingsClicked"
+                                               ToolTip.Tip="{loc:Localize Image_AISettings_Tooltip}"
+                                               AutomationProperties.Name="{loc:Localize Image_AISettings_Tooltip}"
+                                               AutomationProperties.AutomationId="ImageEditorAiSettingsButton"
+                                               IsEnabled="True"
+                                               IsHitTestVisible="True"
+                                               Focusable="True"
+                                               Size="Small"
+                                               Shape="Square"
+                                               Variant="Ghost">
+                                <PathIcon Data="{StaticResource SettingsIcon}" Width="16" Height="16"/>
+                            </daisy:DaisyButton>
                             <Button ToolTip.Tip="Manage Sessions"
                                     Padding="8,6">
                                 <Button.Flyout>
@@ -385,6 +398,20 @@
                                     <daisy:DaisyButton Command="{Binding Workspace.OpenSingleImageCommand}"
                                             Content="{loc:Localize Image_OpenImage_Button}" Variant="Primary"/>
                                 </StackPanel>
+
+                                <!-- Visual feedback while a selected strip image is decoded and loaded -->
+                                <Grid x:Name="WorkspaceImageLoadingShade"
+                                      IsVisible="{Binding Workspace.IsLoadingWorkspaceImage}"
+                                      IsHitTestVisible="True">
+                                    <Border Background="{DynamicResource DaisyNeutralBrush}"
+                                            Opacity="0.7"/>
+                                    <ProgressBar IsIndeterminate="True"
+                                                 Width="180"
+                                                 Height="6"
+                                                 HorizontalAlignment="Center"
+                                                 VerticalAlignment="Center"
+                                                 Foreground="{DynamicResource DaisyPrimaryBrush}"/>
+                                </Grid>
                             </Grid>
                         </Border>
 
@@ -578,7 +605,6 @@
                             BorderThickness="1"
                             CornerRadius="4"
                             Padding="12"
-                            IsEnabled="{Binding Workspace.CanEditSingleImage}"
                             IsVisible="{Binding IsAiCategorySelected}">
                         <Grid>
                             <imgviews:AiAssistantPanel DataContext="{Binding Ai}"

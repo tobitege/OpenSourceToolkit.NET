@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace OpenSourceToolkit.AI.Models
 {
@@ -21,17 +21,17 @@ namespace OpenSourceToolkit.AI.Models
         public string RevisedPrompt { get; set; }
 
         /// <summary>
-        /// Total tokens used (gpt-image-1 only)
+        /// Total tokens used by GPT Image models
         /// </summary>
         public int? TotalTokens { get; set; }
 
         /// <summary>
-        /// Input/prompt tokens used (gpt-image-1 only)
+        /// Input/prompt tokens used by GPT Image models
         /// </summary>
         public int? InputTokens { get; set; }
 
         /// <summary>
-        /// Output/image tokens used (gpt-image-1 only)
+        /// Output/image tokens used by GPT Image models
         /// </summary>
         public int? OutputTokens { get; set; }
 

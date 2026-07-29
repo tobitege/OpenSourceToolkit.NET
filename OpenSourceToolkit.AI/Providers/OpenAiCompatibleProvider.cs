@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
@@ -210,7 +210,7 @@ namespace OpenSourceToolkit.AI.Providers
                     formContent.Add(new StringContent(request.Size), "size");
                 }
 
-                // gpt-image-1 specific parameters
+                // GPT Image model parameters
                 var isGptImage = !string.IsNullOrEmpty(modelId) && modelId.StartsWith("gpt-image");
                 if (isGptImage)
                 {
@@ -281,10 +281,10 @@ namespace OpenSourceToolkit.AI.Providers
                 payload["quality"] = request.Quality;
             }
 
-            // gpt-image-1 specific parameters
+            // GPT Image model parameters
             if (isGptImage)
             {
-                // gpt-image-1 always returns b64_json, uses output_format instead
+                // GPT Image models return b64_json and use output_format instead
                 if (!string.IsNullOrEmpty(request.OutputFormat))
                 {
                     payload["output_format"] = request.OutputFormat;
@@ -401,7 +401,7 @@ namespace OpenSourceToolkit.AI.Providers
 
                 var result = ImageGenerationResponse.Success(images, firstRevisedPrompt);
 
-                // Parse usage information (gpt-image-1 only)
+                // Parse GPT Image usage information
                 if (root.TryGetProperty("usage", out var usageEl))
                 {
                     if (usageEl.TryGetProperty("total_tokens", out var totalEl))

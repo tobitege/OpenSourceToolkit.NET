@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -6,12 +6,15 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LlmTornado;
 using LlmTornado.Chat;
 using LlmTornado.Chat.Models;
 using LlmTornado.Code;
+using LlmTornado.Images;
+using LlmTornado.Images.Models;
 using OpenSourceToolkit.NET.Services;
 using OpenSourceToolkit.NET.Services.Ai;
 using OpenSourceToolkit.NET.ViewModels.Tools.ImageConverter.Models;
@@ -28,6 +31,7 @@ namespace OpenSourceToolkit.NET.ViewModels.Tools.ImageConverter
         private AiConnectionConfig _currentConfig;
         private CancellationTokenSource _aiCts;
         private AiConnectionData _currentAiConnection;
+        private readonly AiAccessManager _aiAccessManager;
 
         // ═══════════════════════════════════════════════════════════════════════════
         // AI Connections
@@ -35,11 +39,13 @@ namespace OpenSourceToolkit.NET.ViewModels.Tools.ImageConverter
 
         public bool HasAiConnections => GetAiConnectionNames().Count > 0;
 
-        public string AiButtonTooltip => HasAiConnections
-            ? "AI Assistant"
-            : "AI Assistant (configure a connection in Settings first)";
+        public bool HasAiAccess => HasAiConnections;
 
-        public Avalonia.Media.IBrush AiIconColor => HasAiConnections
+        public string AiButtonTooltip => HasAiAccess
+            ? "AI Assistant"
+            : "AI Assistant (configure an API connection in Settings first)";
+
+        public Avalonia.Media.IBrush AiIconColor => HasAiAccess
             ? Avalonia.Media.Brushes.LimeGreen
             : Avalonia.Media.Brushes.Gray;
 
@@ -59,12 +65,19 @@ namespace OpenSourceToolkit.NET.ViewModels.Tools.ImageConverter
                 {
                     ConfigureAiService();
                     SendAiMessageCommand?.NotifyCanExecuteChanged();
+                    OnPropertyChanged(nameof(IsApiMode));
+                    OnPropertyChanged(nameof(IsSubscriptionMode));
                     OnPropertyChanged(nameof(IsImageGenerationConnection));
                 }
             }
         }
 
-        public bool IsImageGenerationConnection => _currentAiConnection?.SupportsImageGeneration ?? false;
+        public bool IsImageGenerationConnection =>
+            IsApiMode && (_currentAiConnection?.SupportsImageGeneration ?? false);
+
+        public bool IsSubscriptionMode => _currentConfig?.ProviderType == AiProviderType.Codex;
+        public bool IsApiMode => !IsSubscriptionMode;
+        public bool IsSubscriptionAuthenticated => _aiAccessManager.IsAuthenticated;
 
         // ═══════════════════════════════════════════════════════════════════════════
         // Chat State
@@ -178,10 +191,10 @@ namespace OpenSourceToolkit.NET.ViewModels.Tools.ImageConverter
         public RelayCommand AiChatFontIncreaseCommand { get; }
         public RelayCommand AiChatFontDecreaseCommand { get; }
         public RelayCommand AiChatSaveCommand { get; }
-        public RelayCommand AiChatCopyCommand { get; }
+        public AsyncRelayCommand AiChatCopyCommand { get; }
         public RelayCommand AiChatClearCommand { get; }
-        public RelayCommand<ChatMessageItem> CopyMessageCommand { get; }
-
+        public AsyncRelayCommand<ChatMessageItem> CopyMessageCommand { get; }
+        public RelayCommand<ChatMessageItem> DeleteMessageCommand { get; }
         // ═══════════════════════════════════════════════════════════════════════════
         // External Actions/Events (wired by root/view)
         // ═══════════════════════════════════════════════════════════════════════════
@@ -190,7 +203,7 @@ namespace OpenSourceToolkit.NET.ViewModels.Tools.ImageConverter
         public Func<(byte[] Bytes, string Format)> GetWorkspaceImage { get; set; }
         public Action<byte[], string, string> OnImageGenerated { get; set; }
         public Action PushUndoState { get; set; }
-        public Action<string> CopyToClipboardAction { get; set; }
+        public Func<string, Task> CopyToClipboardAction { get; set; }
         public Action<string> ShowErrorAction { get; set; }
         public Action OnChatChanged { get; set; }
 
@@ -198,8 +211,13 @@ namespace OpenSourceToolkit.NET.ViewModels.Tools.ImageConverter
         // Constructor
         // ═══════════════════════════════════════════════════════════════════════════
 
-        public AiAssistantViewModel()
+        public AiAssistantViewModel() : this(AiAccessServices.Current)
         {
+        }
+
+        public AiAssistantViewModel(AiAccessManager aiAccessManager)
+        {
+            _aiAccessManager = aiAccessManager ?? throw new ArgumentNullException(nameof(aiAccessManager));
             _aiChatFontSize = AppSettings.Current.ImageEditorSessions?.AiChatFontSize ?? 14;
 
             SendAiMessageCommand = new RelayCommand(async () => await SendAiMessageAsync(), CanSendAiMessage);
@@ -207,9 +225,13 @@ namespace OpenSourceToolkit.NET.ViewModels.Tools.ImageConverter
             AiChatFontIncreaseCommand = new RelayCommand(() => AiChatFontSize += 2);
             AiChatFontDecreaseCommand = new RelayCommand(() => AiChatFontSize -= 2);
             AiChatSaveCommand = new RelayCommand(SaveAiChatHistory);
-            AiChatCopyCommand = new RelayCommand(CopyAiChatToClipboard, () => HasMessages);
+            AiChatCopyCommand = new AsyncRelayCommand(CopyAiChatToClipboardAsync, () => HasMessages);
             AiChatClearCommand = new RelayCommand(ClearAiChat, () => HasMessages);
-            CopyMessageCommand = new RelayCommand<ChatMessageItem>(CopyMessageToClipboard);
+            CopyMessageCommand = new AsyncRelayCommand<ChatMessageItem>(CopyMessageToClipboardAsync);
+            DeleteMessageCommand = new RelayCommand<ChatMessageItem>(DeleteMessage);
+
+            _aiAccessManager.StateChanged += OnAccessManagerStateChanged;
+            SynchronizeAccessState();
 
             if (HasAiConnections)
                 SelectedAiConnection = AiConnectionNames.FirstOrDefault();
@@ -224,6 +246,7 @@ namespace OpenSourceToolkit.NET.ViewModels.Tools.ImageConverter
             _aiConnectionNames = null;
             OnPropertyChanged(nameof(AiConnectionNames));
             OnPropertyChanged(nameof(HasAiConnections));
+            OnPropertyChanged(nameof(HasAiAccess));
             OnPropertyChanged(nameof(AiButtonTooltip));
             OnPropertyChanged(nameof(AiIconColor));
 
@@ -349,12 +372,21 @@ namespace OpenSourceToolkit.NET.ViewModels.Tools.ImageConverter
             }
 
             _currentConfig = config;
+            if (config.ProviderType == AiProviderType.Codex)
+            {
+                _tornadoApi = null;
+                TrySelectConfiguredSubscriptionModel();
+                return;
+            }
+
             var llmProvider = MapToLlmProvider(config.ProviderType);
 
             // For local providers (Ollama, LMStudio), use custom endpoint
             if (llmProvider == LLmProviders.Custom && !string.IsNullOrEmpty(config.Endpoint))
             {
-                _tornadoApi = new TornadoApi(new Uri(config.Endpoint));
+                _tornadoApi = string.IsNullOrEmpty(config.ApiKey)
+                    ? new TornadoApi(new Uri(config.Endpoint))
+                    : new TornadoApi(new Uri(config.Endpoint), config.ApiKey);
             }
             else
             {
@@ -367,7 +399,11 @@ namespace OpenSourceToolkit.NET.ViewModels.Tools.ImageConverter
             switch (providerType)
             {
                 case AiProviderType.OpenAI: return LLmProviders.OpenAi;
+                case AiProviderType.OpenAICompatible: return LLmProviders.Custom;
+                case AiProviderType.Codex:
+                    throw new InvalidOperationException("Codex subscription connections do not use an API provider.");
                 case AiProviderType.OpenRouter: return LLmProviders.OpenRouter;
+                case AiProviderType.HuggingFace: return LLmProviders.Custom;
                 case AiProviderType.Anthropic: return LLmProviders.Anthropic;
                 case AiProviderType.Google: return LLmProviders.Google;
                 case AiProviderType.Ollama: return LLmProviders.Custom;
@@ -378,9 +414,18 @@ namespace OpenSourceToolkit.NET.ViewModels.Tools.ImageConverter
 
         private bool CanSendAiMessage()
         {
-            return !IsAiProcessing &&
-                   !string.IsNullOrWhiteSpace(AiUserInput) &&
-                   !string.IsNullOrEmpty(SelectedAiConnection) &&
+            if (IsAiProcessing || string.IsNullOrWhiteSpace(AiUserInput))
+                return false;
+
+            if (IsSubscriptionMode)
+                return IsSubscriptionAuthenticated &&
+                       _aiAccessManager.SubscriptionModels.Any(model =>
+                           string.Equals(
+                               model.ModelId,
+                               _currentConfig.ModelId,
+                               StringComparison.Ordinal));
+
+            return !string.IsNullOrEmpty(SelectedAiConnection) &&
                    _tornadoApi != null &&
                    _currentConfig != null;
         }
@@ -401,8 +446,13 @@ namespace OpenSourceToolkit.NET.ViewModels.Tools.ImageConverter
 
             try
             {
-                var supportsImageGen = _currentAiConnection?.SupportsImageGeneration ?? false;
+                if (IsSubscriptionMode)
+                {
+                    await RunSubscriptionTextAsync(userMessage);
+                    return;
+                }
 
+                var supportsImageGen = _currentAiConnection?.SupportsImageGeneration ?? false;
                 if (supportsImageGen)
                     await GenerateImageAsync(userMessage);
                 else
@@ -415,10 +465,7 @@ namespace OpenSourceToolkit.NET.ViewModels.Tools.ImageConverter
             }
             catch (Exception ex)
             {
-                var message = ex.Message;
-                // Hide API keys from error messages
-                if (message.Contains("sk-") || message.Contains("API key"))
-                    message = "Authentication error. Please check your API key.";
+                var message = SanitizeAuthenticationError(ex.Message);
                 ChatMessages.Add(ChatMessageItem.System(message, isError: true));
                 NotifyChatChanged();
             }
@@ -430,6 +477,99 @@ namespace OpenSourceToolkit.NET.ViewModels.Tools.ImageConverter
             }
         }
 
+        private async Task RunSubscriptionTextAsync(string userMessage)
+        {
+            if (!TrySelectConfiguredSubscriptionModel())
+                throw new InvalidOperationException("The configured Codex subscription model is not available.");
+
+            var aiMessage = ChatMessageItem.Assistant(string.Empty, isStreaming: true);
+            aiMessage.Footer = "Thinking...";
+            ChatMessages.Add(aiMessage);
+            NotifyChatChanged();
+
+            var responseText = new System.Text.StringBuilder();
+            var finalResponse = await _aiAccessManager.RunSubscriptionTurnAsync(
+                userMessage,
+                async delta =>
+                {
+                    responseText.Append(delta);
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        aiMessage.Content = responseText.ToString();
+                    });
+                },
+                _aiCts.Token);
+
+            if (responseText.Length == 0)
+                aiMessage.Content = string.IsNullOrEmpty(finalResponse) ? "[No response]" : finalResponse;
+
+            aiMessage.IsStreaming = false;
+            aiMessage.Footer = null;
+        }
+
+        private bool TrySelectConfiguredSubscriptionModel()
+        {
+            if (!IsSubscriptionMode ||
+                _aiAccessManager.Mode == AiAccessMode.OpenAiApi ||
+                !_aiAccessManager.IsAuthenticated ||
+                string.IsNullOrWhiteSpace(_currentConfig.ModelId) ||
+                !_aiAccessManager.SubscriptionModels.Any(model =>
+                    string.Equals(model.ModelId, _currentConfig.ModelId, StringComparison.Ordinal)))
+            {
+                return false;
+            }
+
+            if (!string.Equals(
+                    _aiAccessManager.SelectedSubscriptionModelId,
+                    _currentConfig.ModelId,
+                    StringComparison.Ordinal))
+            {
+                _aiAccessManager.SelectSubscriptionModel(_currentConfig.ModelId);
+            }
+
+            return true;
+        }
+
+        private static string SanitizeAuthenticationError(string message)
+        {
+            if (string.IsNullOrWhiteSpace(message))
+                return "Authentication failed.";
+
+            if (message.Contains("sk-", StringComparison.OrdinalIgnoreCase) ||
+                message.Contains("API key", StringComparison.OrdinalIgnoreCase) ||
+                message.Contains("access_token", StringComparison.OrdinalIgnoreCase) ||
+                message.Contains("refresh_token", StringComparison.OrdinalIgnoreCase) ||
+                message.Contains("id_token", StringComparison.OrdinalIgnoreCase) ||
+                message.Contains("authorization:", StringComparison.OrdinalIgnoreCase) ||
+                message.Contains("bearer ", StringComparison.OrdinalIgnoreCase))
+            {
+                return "Authentication failed. Check the configured credentials.";
+            }
+
+            return message;
+        }
+
+        private void SynchronizeAccessState()
+        {
+            OnPropertyChanged(nameof(IsApiMode));
+            OnPropertyChanged(nameof(IsSubscriptionMode));
+            OnPropertyChanged(nameof(IsSubscriptionAuthenticated));
+            OnPropertyChanged(nameof(IsImageGenerationConnection));
+            OnPropertyChanged(nameof(HasAiAccess));
+            OnPropertyChanged(nameof(AiButtonTooltip));
+            OnPropertyChanged(nameof(AiIconColor));
+
+            SendAiMessageCommand?.NotifyCanExecuteChanged();
+        }
+
+        private void OnAccessManagerStateChanged(object sender, EventArgs e)
+        {
+            if (Dispatcher.UIThread.CheckAccess())
+                SynchronizeAccessState();
+            else
+                Dispatcher.UIThread.Post(SynchronizeAccessState);
+        }
+
         private async Task GenerateImageAsync(string prompt)
         {
             PushUndoState?.Invoke();
@@ -439,6 +579,24 @@ namespace OpenSourceToolkit.NET.ViewModels.Tools.ImageConverter
             aiMessage.Footer = "Processing...";
             ChatMessages.Add(aiMessage);
             NotifyChatChanged();
+
+            if (_currentConfig.ProviderType == AiProviderType.OpenAI)
+            {
+                await GenerateOpenAiImageAsync(prompt, aiMessage);
+                return;
+            }
+
+            if (_currentConfig.ProviderType == AiProviderType.OpenRouter)
+            {
+                await GenerateOpenRouterImageAsync(prompt, aiMessage);
+                return;
+            }
+
+            if (_currentConfig.ProviderType == AiProviderType.HuggingFace)
+            {
+                await GenerateHuggingFaceImageAsync(prompt, aiMessage);
+                return;
+            }
 
             var llmProvider = MapToLlmProvider(_currentConfig.ProviderType);
             var model = new ChatModel(_currentConfig.ModelId, llmProvider);
@@ -456,35 +614,11 @@ namespace OpenSourceToolkit.NET.ViewModels.Tools.ImageConverter
             // Build message parts
             var parts = new List<ChatMessagePart> { new ChatMessagePart(prompt) };
 
-            // Always add thumbnails marked for AI (per-thumbnail checkbox)
-            var imagesToSend = GetImagesForAi?.Invoke() ?? new List<(byte[] Data, string MimeType)>();
-            foreach (var (data, mime) in imagesToSend)
+            foreach (var (data, mime) in GetImageGenerationInputs())
             {
                 var base64 = Convert.ToBase64String(data);
                 var dataUrl = $"data:{mime};base64,{base64}";
                 parts.Add(new ChatMessagePart(new ChatImage(dataUrl, mime)));
-            }
-
-            // Also add workspace image if "Send image?" is checked
-            if (SendWorkspaceImage)
-            {
-                var workspaceData = GetWorkspaceImage?.Invoke();
-                if (workspaceData.HasValue && workspaceData.Value.Bytes != null)
-                {
-                    var format = workspaceData.Value.Format?.ToLowerInvariant();
-                    string mimeType;
-                    switch (format)
-                    {
-                        case "jpg":
-                        case "jpeg": mimeType = "image/jpeg"; break;
-                        case "gif": mimeType = "image/gif"; break;
-                        case "webp": mimeType = "image/webp"; break;
-                        default: mimeType = "image/png"; break;
-                    }
-                    var base64 = Convert.ToBase64String(workspaceData.Value.Bytes);
-                    var dataUrl = $"data:{mimeType};base64,{base64}";
-                    parts.Add(new ChatMessagePart(new ChatImage(dataUrl, mimeType)));
-                }
             }
 
             chatRequest.Messages = new List<ChatMessage>
@@ -567,6 +701,161 @@ namespace OpenSourceToolkit.NET.ViewModels.Tools.ImageConverter
             aiMessage.IsSuccess = true;
             aiMessage.IsStreaming = false;
             aiMessage.Footer = null;
+        }
+
+        private async Task GenerateOpenRouterImageAsync(string prompt, ChatMessageItem aiMessage)
+        {
+            var generatedImage = await OpenRouterImageApiClient.GenerateImageAsync(
+                _currentConfig.ApiKey,
+                _currentConfig.Endpoint,
+                _currentConfig.ModelId,
+                prompt,
+                ImageGenSize,
+                ImageGenQuality,
+                GetImageGenerationInputs(),
+                _aiCts.Token);
+
+            if (generatedImage.Data == null || generatedImage.Data.Length == 0)
+            {
+                aiMessage.Content = "The image provider returned no image data.";
+                aiMessage.IsStreaming = false;
+                aiMessage.Footer = null;
+                return;
+            }
+
+            OnImageGenerated?.Invoke(
+                generatedImage.Data,
+                "generated_image",
+                generatedImage.MimeType);
+            aiMessage.Content = "✓ Image generated successfully!";
+            aiMessage.IsSuccess = true;
+            aiMessage.IsStreaming = false;
+            aiMessage.Footer = null;
+        }
+
+        private async Task GenerateOpenAiImageAsync(string prompt, ChatMessageItem aiMessage)
+        {
+            var request = new ImageGenerationRequest(prompt)
+            {
+                Model = new ImageModel(_currentConfig.ModelId, LLmProviders.OpenAi),
+                Size = MapImageSize(ImageGenSize),
+                Quality = MapImageQuality(ImageGenQuality)
+            };
+
+            var response = await _tornadoApi.ImageGenerations.CreateImage(request);
+            var generatedImage = response?.Data?.FirstOrDefault();
+            if (generatedImage == null)
+            {
+                aiMessage.Content = "No image was generated.";
+                aiMessage.IsStreaming = false;
+                aiMessage.Footer = null;
+                return;
+            }
+
+            byte[] imageData = null;
+            if (!string.IsNullOrEmpty(generatedImage.Base64))
+            {
+                imageData = Convert.FromBase64String(generatedImage.Base64);
+            }
+            else if (!string.IsNullOrEmpty(generatedImage.Url))
+            {
+                using var httpClient = new System.Net.Http.HttpClient();
+                imageData = await httpClient.GetByteArrayAsync(generatedImage.Url);
+            }
+
+            if (imageData == null || imageData.Length == 0)
+            {
+                aiMessage.Content = "The image provider returned no image data.";
+                aiMessage.IsStreaming = false;
+                aiMessage.Footer = null;
+                return;
+            }
+
+            var mimeType = string.IsNullOrEmpty(generatedImage.MimeType)
+                ? "image/png"
+                : generatedImage.MimeType;
+
+            OnImageGenerated?.Invoke(imageData, "generated_image", mimeType);
+            aiMessage.Content = "✓ Image generated successfully!";
+            aiMessage.IsSuccess = true;
+            aiMessage.IsStreaming = false;
+            aiMessage.Footer = null;
+        }
+
+        private async Task GenerateHuggingFaceImageAsync(string prompt, ChatMessageItem aiMessage)
+        {
+            var generatedImage = await HuggingFaceApiClient.GenerateImageAsync(
+                _currentConfig.ApiKey,
+                _currentConfig.ModelId,
+                prompt,
+                ImageGenSize,
+                _aiCts.Token);
+
+            if (generatedImage.Data == null || generatedImage.Data.Length == 0)
+            {
+                aiMessage.Content = "The image provider returned no image data.";
+                aiMessage.IsStreaming = false;
+                aiMessage.Footer = null;
+                return;
+            }
+
+            OnImageGenerated?.Invoke(
+                generatedImage.Data,
+                "generated_image",
+                generatedImage.MimeType);
+            aiMessage.Content = "✓ Image generated successfully!";
+            aiMessage.IsSuccess = true;
+            aiMessage.IsStreaming = false;
+            aiMessage.Footer = null;
+        }
+
+        private List<(byte[] Data, string MimeType)> GetImageGenerationInputs()
+        {
+            var images = new List<(byte[] Data, string MimeType)>(
+                GetImagesForAi?.Invoke() ?? new List<(byte[] Data, string MimeType)>());
+
+            if (!SendWorkspaceImage)
+                return images;
+
+            var workspaceData = GetWorkspaceImage?.Invoke();
+            if (!workspaceData.HasValue || workspaceData.Value.Bytes == null)
+                return images;
+
+            var format = workspaceData.Value.Format?.ToLowerInvariant();
+            string mimeType;
+            switch (format)
+            {
+                case "jpg":
+                case "jpeg": mimeType = "image/jpeg"; break;
+                case "gif": mimeType = "image/gif"; break;
+                case "webp": mimeType = "image/webp"; break;
+                default: mimeType = "image/png"; break;
+            }
+
+            images.Add((workspaceData.Value.Bytes, mimeType));
+            return images;
+        }
+
+        private static TornadoImageSizes MapImageSize(string size)
+        {
+            switch (size)
+            {
+                case "1536x1024": return TornadoImageSizes.Size1536x1024;
+                case "1024x1536": return TornadoImageSizes.Size1024x1536;
+                case "auto": return TornadoImageSizes.Auto;
+                default: return TornadoImageSizes.Size1024x1024;
+            }
+        }
+
+        private static TornadoImageQualities MapImageQuality(string quality)
+        {
+            switch (quality)
+            {
+                case "high": return TornadoImageQualities.High;
+                case "medium": return TornadoImageQualities.Medium;
+                case "low": return TornadoImageQualities.Low;
+                default: return TornadoImageQualities.Auto;
+            }
         }
 
         private async Task AnalyzeImageWithAiAsync(string userMessage)
@@ -664,22 +953,33 @@ BOUNDARY: {boundary}
             }
         }
 
-        private void CopyAiChatToClipboard()
+        private async Task CopyAiChatToClipboardAsync()
         {
             var text = GetChatTextForExport();
-            if (!string.IsNullOrEmpty(text))
-                CopyToClipboardAction?.Invoke(text);
+            if (!string.IsNullOrEmpty(text) && CopyToClipboardAction != null)
+                await CopyToClipboardAction(text);
         }
 
-        private void CopyMessageToClipboard(ChatMessageItem message)
+        private async Task CopyMessageToClipboardAsync(ChatMessageItem message)
         {
-            if (message != null && !string.IsNullOrEmpty(message.Content))
-                CopyToClipboardAction?.Invoke(message.Content);
+            if (message != null &&
+                !string.IsNullOrEmpty(message.Content) &&
+                CopyToClipboardAction != null)
+            {
+                await CopyToClipboardAction(message.Content);
+            }
+        }
+
+        private void DeleteMessage(ChatMessageItem message)
+        {
+            if (message != null && ChatMessages.Remove(message))
+                NotifyChatChanged();
         }
 
         private void ClearAiChat()
         {
             ChatMessages.Clear();
+            _aiAccessManager.ResetThread();
             NotifyChatChanged();
         }
 

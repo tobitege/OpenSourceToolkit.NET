@@ -2,6 +2,8 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
 using Avalonia.VisualTree;
@@ -107,6 +109,7 @@ namespace OpenSourceToolkit.NET.Views.Tools
                 vm.SaveWorkspaceImageAction = SaveWorkspaceImage;
                 vm.LoadWatermarkImageAction = LoadWatermarkImage;
                 vm.CopyImageToClipboardAction = CopyImageToClipboard;
+                vm.CopyToClipboardAction = CopyTextToClipboardAsync;
 
                 // Batch actions
                 vm.SelectFilesAction = SelectFiles;
@@ -134,6 +137,15 @@ namespace OpenSourceToolkit.NET.Views.Tools
 
                 // Initialize session management (loads last session or creates new)
                 _ = vm.InitializeSessionAsync();
+            }
+        }
+
+        private void OnOpenAiSettingsClicked(object sender, RoutedEventArgs e)
+        {
+            if (sender is Control button &&
+                TopLevel.GetTopLevel(button) is global::OpenSourceToolkit.NET.Views.MainWindow mainWindow)
+            {
+                mainWindow.OpenSettings(global::OpenSourceToolkit.NET.Views.SettingsSection.AiConnections);
             }
         }
 
@@ -774,6 +786,15 @@ namespace OpenSourceToolkit.NET.Views.Tools
         private void ShowError(string message)
         {
             Console.WriteLine($"Error: {message}");
+        }
+
+        private async Task CopyTextToClipboardAsync(string text)
+        {
+            var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+            if (clipboard == null) return;
+
+            await clipboard.SetTextAsync(text);
+            await clipboard.FlushAsync();
         }
 
         /// <summary>

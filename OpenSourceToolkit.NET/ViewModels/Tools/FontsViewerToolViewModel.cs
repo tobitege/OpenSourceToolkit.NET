@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Drawing.Text;
@@ -1121,7 +1121,7 @@ namespace OpenSourceToolkit.NET.ViewModels.Tools
             // Draw text centered vertically
             float x = padding;
             float y = height / 2f + bounds.Height / 2f - bounds.Bottom;
-            canvas.DrawText(text, x, y, font, paint);
+            canvas.DrawText(text, x, y, SKTextAlign.Left, font, paint);
 
             // Convert to Avalonia Bitmap
             using var image = surface.Snapshot();

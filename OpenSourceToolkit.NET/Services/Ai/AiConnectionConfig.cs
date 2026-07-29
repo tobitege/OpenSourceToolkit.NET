@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace OpenSourceToolkit.NET.Services.Ai
@@ -23,12 +23,32 @@ namespace OpenSourceToolkit.NET.Services.Ai
                         Endpoint = "https://api.openai.com/v1",
                         ModelId = "gpt-5.1"
                     };
+                case AiProviderType.OpenAICompatible:
+                    return new AiConnectionConfig
+                    {
+                        ProviderType = AiProviderType.OpenAICompatible,
+                        Endpoint = string.Empty,
+                        ModelId = string.Empty
+                    };
+                case AiProviderType.Codex:
+                    return new AiConnectionConfig
+                    {
+                        ProviderType = AiProviderType.Codex,
+                        ModelId = string.Empty
+                    };
                 case AiProviderType.OpenRouter:
                     return new AiConnectionConfig
                     {
                         ProviderType = AiProviderType.OpenRouter,
                         Endpoint = "https://openrouter.ai/api/v1",
                         ModelId = "anthropic/claude-sonnet-4.5"
+                    };
+                case AiProviderType.HuggingFace:
+                    return new AiConnectionConfig
+                    {
+                        ProviderType = AiProviderType.HuggingFace,
+                        Endpoint = "https://router.huggingface.co/v1",
+                        ModelId = "openai/gpt-oss-120b"
                     };
                 case AiProviderType.Anthropic:
                     return new AiConnectionConfig
@@ -84,6 +104,8 @@ namespace OpenSourceToolkit.NET.Services.Ai
                         "o1",
                         "o1-mini"
                     };
+                case AiProviderType.Codex:
+                    return new List<string>();
                 case AiProviderType.OpenRouter:
                     return new List<string>
                     {
@@ -95,6 +117,11 @@ namespace OpenSourceToolkit.NET.Services.Ai
                         "google/gemini-3-pro",
                         "google/gemini-3-flash"
                     };
+                case AiProviderType.HuggingFace:
+                    return new List<string>
+                    {
+                        "openai/gpt-oss-120b"
+                    };
                 case AiProviderType.Anthropic:
                     return new List<string>
                     {
@@ -104,8 +131,7 @@ namespace OpenSourceToolkit.NET.Services.Ai
                 case AiProviderType.Google:
                     return new List<string>
                     {
-                        "gemini-3-pro-preview",
-                        "gemini-2.5-flash-preview"
+                        "gemini-3-pro-preview"
                     };
                 case AiProviderType.Ollama:
                     return new List<string>
@@ -146,20 +172,32 @@ namespace OpenSourceToolkit.NET.Services.Ai
                 case AiProviderType.OpenAI:
                     return new List<string>
                     {
-                        "gpt-image-1-mini",
-                        "gpt-image-1"
+                        "gpt-image-2"
                     };
                 case AiProviderType.OpenRouter:
                     return new List<string>
                     {
-                        "google/gemini-2.5-flash-image",
-                        "black-forest-labs/flux-pro"
+                        "black-forest-labs/flux.2-max",
+                        "black-forest-labs/flux.2-pro",
+                        "bytedance-seed/seedream-4.5",
+                        "google/gemini-3-pro-image",
+                        "google/gemini-3.1-flash-image",
+                        "google/gemini-3.1-flash-lite-image",
+                        "microsoft/mai-image-2.5",
+                        "openai/gpt-image-2",
+                        "x-ai/grok-imagine-image-quality"
+                    };
+                case AiProviderType.HuggingFace:
+                    return new List<string>
+                    {
+                        "stabilityai/stable-diffusion-3-medium-diffusers"
                     };
                 case AiProviderType.Google:
                     return new List<string>
                     {
-                        "imagen-3.0-generate-002",
-                        "imagen-3.0-fast-generate-001"
+                        "gemini-3.1-flash-image",
+                        "gemini-3.1-flash-lite-image",
+                        "gemini-3-pro-image"
                     };
                 default:
                     return new List<string>();
@@ -173,17 +211,47 @@ namespace OpenSourceToolkit.NET.Services.Ai
 
             var modelLower = modelId.ToLowerInvariant();
 
+            if (IsExcludedModel(modelLower))
+                return false;
+
+            var hasKnownImageName = modelLower.Contains("image")
+                || modelLower.Contains("flux")
+                || modelLower.Contains("krea")
+                || modelLower.Contains("recraft")
+                || modelLower.Contains("riverflow")
+                || modelLower.Contains("seedream")
+                || modelLower.Contains("stable-diffusion")
+                || modelLower.Contains("sdxl")
+                || modelLower.Contains("dall-e")
+                || modelLower.Contains("dalle")
+                || modelLower.Contains("ideogram")
+                || modelLower.Contains("imagen")
+                || modelLower.Contains("grok-imagine")
+                || modelLower.Contains("qwen-image")
+                || modelLower.Contains("hidream");
+
             switch (providerType)
             {
                 case AiProviderType.OpenAI:
-                    return modelLower.Contains("gpt-image");
+                    return modelLower.Contains("gpt-image") || hasKnownImageName;
                 case AiProviderType.OpenRouter:
-                    return modelLower.Contains("-image") || modelLower.Contains("flux");
+                    return OpenRouterModelCatalog.IsKnownImageGenerationModelId(modelId)
+                        || GetDefaultImageModels(providerType).Contains(modelLower)
+                        || hasKnownImageName;
+                case AiProviderType.HuggingFace:
+                    return HuggingFaceApiClient.IsImageGenerationModel(modelLower) || hasKnownImageName;
                 case AiProviderType.Google:
-                    return modelLower.Contains("imagen");
+                    return hasKnownImageName;
                 default:
-                    return false;
+                    return hasKnownImageName;
             }
+        }
+
+        internal static bool IsExcludedModel(string modelId)
+        {
+            return modelId.Equals("openai/gpt-5.4-image-2", StringComparison.OrdinalIgnoreCase)
+                || modelId.StartsWith("google/gemini-2.", StringComparison.OrdinalIgnoreCase)
+                || modelId.StartsWith("gemini-2.", StringComparison.OrdinalIgnoreCase);
         }
     }
 

@@ -6,30 +6,152 @@
         xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
         xmlns:daisy="clr-namespace:Flowery.Controls;assembly=Flowery.NET"
         xmlns:loc="clr-namespace:OpenSourceToolkit.NET.Localization"
+        xmlns:ai="clr-namespace:OpenSourceToolkit.NET.Services.Ai"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="800"
         x:Class="OpenSourceToolkit.NET.Views.SettingsWindow"
         x:DataType="vm:SettingsViewModel"
         Title="{loc:Localize Settings_Title}"
-        Width="800" Height="800"
-        MinWidth="800" MinHeight="600"
+        Width="1100" Height="800"
+        MinWidth="900" MinHeight="600"
         WindowStartupLocation="CenterOwner">
 
     <Design.DataContext>
         <vm:SettingsViewModel/>
     </Design.DataContext>
 
+    <Window.Styles>
+        <Style Selector="ListBox.settings-navigation">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        <Style Selector="ListBox.settings-navigation ListBoxItem">
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="0,2"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        </Style>
+        <Style Selector="ListBox.settings-navigation ListBoxItem:selected">
+            <Setter Property="Background" Value="{DynamicResource DaisyBase300Brush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource DaisyPrimaryBrush}"/>
+        </Style>
+        <Style Selector="ListBox.provider-models ListBoxItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        </Style>
+        <Style Selector="ListBox.provider-models ListBoxItem daisy|DaisyButton.model-delete">
+            <Setter Property="Opacity" Value="0"/>
+            <Setter Property="IsHitTestVisible" Value="False"/>
+            <Setter Property="Focusable" Value="False"/>
+        </Style>
+        <Style Selector="ListBox.provider-models ListBoxItem:pointerover daisy|DaisyButton.model-delete">
+            <Setter Property="Opacity" Value="1"/>
+            <Setter Property="IsHitTestVisible" Value="True"/>
+            <Setter Property="Focusable" Value="True"/>
+        </Style>
+        <Style Selector="ListBox.provider-models ListBoxItem:focus-within daisy|DaisyButton.model-delete">
+            <Setter Property="Opacity" Value="1"/>
+            <Setter Property="IsHitTestVisible" Value="True"/>
+            <Setter Property="Focusable" Value="True"/>
+        </Style>
+        <Style Selector="daisy|DaisyInput.required-error">
+            <Setter Property="Variant" Value="Error"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource DaisyErrorBrush}"/>
+        </Style>
+    </Window.Styles>
+
     <Grid RowDefinitions="*,Auto" Margin="16">
-        <!-- DaisyTabs for Settings -->
-        <daisy:DaisyTabs Grid.Row="0" Variant="Boxed" Size="Small">
+        <Grid Grid.Row="0" ColumnDefinitions="220,*">
+            <Border Grid.Column="0"
+                    Background="{DynamicResource DaisyBase200Brush}"
+                    BorderBrush="{DynamicResource DaisyBase300Brush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="12"
+                    Margin="0,0,16,0">
+                <Grid RowDefinitions="Auto,*">
+                    <TextBlock Grid.Row="0"
+                               Text="{loc:Localize Settings_Title}"
+                               FontSize="20"
+                               FontWeight="Bold"
+                               Margin="8,4,8,16"
+                               Foreground="{DynamicResource DaisyBaseContentBrush}"/>
+                    <ListBox x:Name="SettingsNavigationList"
+                             Grid.Row="1"
+                             Classes="settings-navigation"
+                             SelectedIndex="0"
+                             SelectionMode="Single"
+                             AutomationProperties.Name="{loc:Localize Settings_Title}"
+                             AutomationProperties.AutomationId="SettingsNavigation">
+                        <ListBoxItem x:Name="GeneralSettingsNavigationItem">
+                            <daisy:DaisyButton Variant="Default"
+                                               Size="Small"
+                                               Height="40"
+                                               HorizontalAlignment="Stretch"
+                                               HorizontalContentAlignment="Left"
+                                               Click="SettingsNavigationButton_Click"
+                                               Tag="0"
+                                               AutomationProperties.Name="{loc:Localize Settings_Tab_General}"
+                                               AutomationProperties.AutomationId="SettingsNavigationGeneral">
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <materialIcons:MaterialIcon Kind="Cog" Width="20" Height="20"/>
+                                    <TextBlock Text="{loc:Localize Settings_Tab_General}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </daisy:DaisyButton>
+                        </ListBoxItem>
+                        <ListBoxItem x:Name="ConnectionsSettingsNavigationItem">
+                            <daisy:DaisyButton Variant="Default"
+                                               Size="Small"
+                                               Height="40"
+                                               HorizontalAlignment="Stretch"
+                                               HorizontalContentAlignment="Left"
+                                               Click="SettingsNavigationButton_Click"
+                                               Tag="1"
+                                               AutomationProperties.Name="{loc:Localize Settings_Tab_AIConnections}"
+                                               AutomationProperties.AutomationId="SettingsNavigationConnections">
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <materialIcons:MaterialIcon Kind="Connection" Width="20" Height="20"/>
+                                    <TextBlock Text="{loc:Localize Settings_Tab_AIConnections}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </daisy:DaisyButton>
+                        </ListBoxItem>
+                        <ListBoxItem x:Name="ProvidersSettingsNavigationItem">
+                            <daisy:DaisyButton Variant="Default"
+                                               Size="Small"
+                                               Height="40"
+                                               HorizontalAlignment="Stretch"
+                                               HorizontalContentAlignment="Left"
+                                               Click="SettingsNavigationButton_Click"
+                                               Tag="2"
+                                               AutomationProperties.Name="{loc:Localize Settings_Tab_AIProviders}"
+                                               AutomationProperties.AutomationId="SettingsNavigationProviders">
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <materialIcons:MaterialIcon Kind="Robot" Width="20" Height="20"/>
+                                    <TextBlock Text="{loc:Localize Settings_Tab_AIProviders}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </daisy:DaisyButton>
+                        </ListBoxItem>
+                        <ListBoxItem x:Name="AboutSettingsNavigationItem">
+                            <daisy:DaisyButton Variant="Default"
+                                               Size="Small"
+                                               Height="40"
+                                               HorizontalAlignment="Stretch"
+                                               HorizontalContentAlignment="Left"
+                                               Click="SettingsNavigationButton_Click"
+                                               Tag="3"
+                                               AutomationProperties.Name="{loc:Localize Settings_Tab_About}"
+                                               AutomationProperties.AutomationId="SettingsNavigationAbout">
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <materialIcons:MaterialIcon Kind="InformationOutline" Width="20" Height="20"/>
+                                    <TextBlock Text="{loc:Localize Settings_Tab_About}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </daisy:DaisyButton>
+                        </ListBoxItem>
+                    </ListBox>
+                </Grid>
+            </Border>
+
+            <Grid Grid.Column="1">
             <!-- General Tab -->
-            <TabItem x:Name="GeneralSettingsTab">
-                <TabItem.Header>
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                        <materialIcons:MaterialIcon Kind="Cog" Width="16" Height="16"/>
-                        <TextBlock Text="{loc:Localize Settings_Tab_General}"/>
-                    </StackPanel>
-                </TabItem.Header>
-                <ScrollViewer Margin="0,12,0,0">
+            <Grid IsVisible="{Binding IsSelected, ElementName=GeneralSettingsNavigationItem}">
+                <ScrollViewer>
                     <StackPanel Spacing="16">
                         <!-- Audio Settings Section -->
                         <Border Background="{DynamicResource DaisyBase200Brush}"
@@ -162,17 +284,11 @@
                         </Border>
                     </StackPanel>
                 </ScrollViewer>
-            </TabItem>
+            </Grid>
 
             <!-- AI Connections Tab -->
-            <TabItem>
-                <TabItem.Header>
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                        <materialIcons:MaterialIcon Kind="Connection" Width="16" Height="16"/>
-                        <TextBlock Text="{loc:Localize Settings_Tab_AIConnections}"/>
-                    </StackPanel>
-                </TabItem.Header>
-                <Grid Margin="0,12,0,0">
+            <Grid IsVisible="{Binding IsSelected, ElementName=ConnectionsSettingsNavigationItem}">
+                <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="250" MinWidth="200"/>
                         <ColumnDefinition Width="Auto"/>
@@ -225,6 +341,7 @@
 
                             <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8" Margin="0,12,0,0">
                                 <daisy:DaisyButton Command="{Binding AddConnectionCommand}"
+                                        Variant="Default"
                                         IsEnabled="{Binding CanAddConnection}">
                                     <StackPanel Orientation="Horizontal" Spacing="4">
                                         <materialIcons:MaterialIcon Kind="Plus" Width="16" Height="16"/>
@@ -261,35 +378,105 @@
                                                FontWeight="SemiBold" FontSize="16" Foreground="{DynamicResource DaisyBaseContentBrush}"/>
                                 </StackPanel>
 
-                                <Grid ColumnDefinitions="110,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+                                <Grid ColumnDefinitions="110,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
                                     <!-- Name -->
                                     <TextBlock Grid.Row="0" Grid.Column="0" Text="{loc:Localize Settings_Connections_Name}" VerticalAlignment="Center"
                                                Foreground="{DynamicResource DaisyBaseContentBrush}"/>
-                                    <daisy:DaisyInput Grid.Row="0" Grid.Column="1" Text="{Binding EditConnectionName}"
+                                    <daisy:DaisyInput Grid.Row="0" Grid.Column="1"
+                                             Text="{Binding EditConnectionName}"
+                                             Classes.required-error="{Binding IsConnectionNameMissing}"
                                              PlaceholderText="{loc:Localize Settings_Connections_NameWatermark}" HorizontalAlignment="Stretch"/>
 
                                     <!-- Provider -->
                                     <TextBlock Grid.Row="1" Grid.Column="0" Text="{loc:Localize Settings_Connections_Provider}" VerticalAlignment="Center"
                                                Margin="0,12,0,0" Foreground="{DynamicResource DaisyBaseContentBrush}"/>
                                     <daisy:DaisySelect Grid.Row="1" Grid.Column="1"
-                                              ItemsSource="{Binding AiProviders}"
+                                              ItemsSource="{Binding ConnectionProviders}"
                                               SelectedItem="{Binding EditSelectedProvider}"
                                               HorizontalAlignment="Stretch" Margin="0,12,0,0"/>
 
+                                    <!-- Base URL -->
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="{loc:Localize Settings_Connections_BaseUrl}" VerticalAlignment="Center"
+                                               Margin="0,12,0,0" Foreground="{DynamicResource DaisyBaseContentBrush}"
+                                               IsVisible="{Binding IsEditingOpenAICompatibleConnection}"/>
+                                    <daisy:DaisyInput Grid.Row="2" Grid.Column="1"
+                                             Text="{Binding EditCustomEndpoint}"
+                                             PlaceholderText="{loc:Localize Settings_Connections_BaseUrlWatermark}"
+                                             HorizontalAlignment="Stretch" Margin="0,12,0,0"
+                                             IsVisible="{Binding IsEditingOpenAICompatibleConnection}"/>
+
                                     <!-- Model -->
-                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="{loc:Localize Settings_Connections_Model}" VerticalAlignment="Center"
+                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="{loc:Localize Settings_Connections_Model}" VerticalAlignment="Center"
                                                Margin="0,12,0,0" Foreground="{DynamicResource DaisyBaseContentBrush}"/>
-                                    <daisy:DaisySelect Grid.Row="2" Grid.Column="1"
-                                              ItemsSource="{Binding EditAvailableModels}"
-                                              SelectedItem="{Binding EditSelectedModel}"
-                                              IsEditable="True"
-                                              HorizontalAlignment="Stretch" Margin="0,12,0,0"/>
+                                    <Grid Grid.Row="3" Grid.Column="1"
+                                          ColumnDefinitions="*,Auto"
+                                          ColumnSpacing="4"
+                                          Margin="0,12,0,0">
+                                        <AutoCompleteBox x:Name="ConnectionModelPicker"
+                                                         Grid.Column="0"
+                                                         ItemsSource="{Binding EditAvailableModelOptions}"
+                                                         Text="{Binding EditSelectedModel, Mode=TwoWay}"
+                                                         ValueMemberBinding="{Binding ModelId}"
+                                                         MinimumPrefixLength="0"
+                                                         MinimumPopulateDelay="0"
+                                                         MaxDropDownHeight="600"
+                                                         IsTextCompletionEnabled="False"
+                                                         ClearSelectionOnLostFocus="False"
+                                                         GotFocus="ConnectionModelPicker_GotFocus"
+                                                         PlaceholderText="{loc:Localize Settings_Connections_ModelSearchWatermark}"
+                                                         AutomationProperties.Name="{loc:Localize Settings_Connections_ModelSearchWatermark}"
+                                                         HorizontalAlignment="Stretch">
+                                            <AutoCompleteBox.ItemTemplate>
+                                                <DataTemplate x:DataType="vm:AiModelOption">
+                                                    <Grid ColumnDefinitions="Auto,*"
+                                                          ColumnSpacing="8"
+                                                          Height="30"
+                                                          Margin="2">
+                                                        <Border Grid.Column="0"
+                                                                Background="{DynamicResource DaisySuccessBrush}"
+                                                                CornerRadius="3"
+                                                                Padding="4,2"
+                                                                IsVisible="{Binding IsImageGeneration}">
+                                                            <TextBlock Text="{loc:Localize Settings_Connections_ImageGenBadge}"
+                                                                       FontSize="10"
+                                                                       Foreground="{DynamicResource DaisySuccessContentBrush}"/>
+                                                        </Border>
+                                                        <Border Grid.Column="0"
+                                                                Background="{DynamicResource DaisyBase300Brush}"
+                                                                CornerRadius="3"
+                                                                Padding="4,2"
+                                                                IsVisible="{Binding IsTextOnly}">
+                                                            <TextBlock Text="{loc:Localize Settings_Connections_TextModelBadge}"
+                                                                       FontSize="10"
+                                                                       Foreground="{DynamicResource DaisyBaseContentBrush}"/>
+                                                        </Border>
+                                                        <TextBlock Grid.Column="1"
+                                                                   Text="{Binding ModelId}"
+                                                                   TextTrimming="CharacterEllipsis"
+                                                                   VerticalAlignment="Center"/>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </AutoCompleteBox.ItemTemplate>
+                                        </AutoCompleteBox>
+                                        <daisy:DaisyButton Grid.Column="1"
+                                                           Click="OpenConnectionModelList_Click"
+                                                           Variant="Default"
+                                                           Size="Small"
+                                                           Shape="Square"
+                                                           ToolTip.Tip="{loc:Localize Settings_Connections_ModelSearchWatermark}"
+                                                           AutomationProperties.Name="{loc:Localize Settings_Connections_ModelSearchWatermark}">
+                                            <PathIcon Data="{StaticResource ChevronDownIcon}" Width="16" Height="16"/>
+                                        </daisy:DaisyButton>
+                                    </Grid>
 
                                     <!-- Custom API Key -->
-                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="{loc:Localize Settings_Connections_ApiKey}" VerticalAlignment="Center"
-                                               Margin="0,12,0,0" Foreground="{DynamicResource DaisyBaseContentBrush}"/>
-                                    <StackPanel Grid.Row="3" Grid.Column="1" Margin="0,12,0,0">
+                                    <TextBlock Grid.Row="4" Grid.Column="0" Text="{loc:Localize Settings_Connections_ApiKey}" VerticalAlignment="Center"
+                                               Margin="0,12,0,0" Foreground="{DynamicResource DaisyBaseContentBrush}"
+                                               IsVisible="{Binding IsEditingApiConnection}"/>
+                                    <StackPanel Grid.Row="4" Grid.Column="1" Margin="0,12,0,0"
+                                                IsVisible="{Binding IsEditingApiConnection}">
                                         <daisy:DaisyButton Content="{loc:Localize Settings_Connections_OverrideApiKey}" Command="{Binding ShowCustomApiKeyCommand}"
+                                                Variant="Default"
                                                 IsVisible="{Binding !EditShowCustomApiKey}" HorizontalAlignment="Left"/>
                                         <daisy:DaisyInput Text="{Binding EditCustomApiKey}" PasswordChar="•"
                                                  PlaceholderText="{loc:Localize Settings_Connections_CustomApiKeyWatermark}"
@@ -298,36 +485,65 @@
                                     </StackPanel>
 
                                     <!-- Max Tokens -->
-                                    <TextBlock Grid.Row="4" Grid.Column="0" Text="{loc:Localize Settings_Connections_MaxTokens}" VerticalAlignment="Center"
-                                               Margin="0,12,0,0" Foreground="{DynamicResource DaisyBaseContentBrush}"/>
-                                    <daisy:DaisyNumericUpDown Grid.Row="4" Grid.Column="1"
+                                    <TextBlock Grid.Row="5" Grid.Column="0" Text="{loc:Localize Settings_Connections_MaxTokens}" VerticalAlignment="Center"
+                                               Margin="0,12,0,0" Foreground="{DynamicResource DaisyBaseContentBrush}"
+                                               IsVisible="{Binding IsEditingApiConnection}"/>
+                                    <daisy:DaisyNumericUpDown Grid.Row="5" Grid.Column="1"
                                                    Value="{Binding EditMaxTokens}"
                                                    Minimum="100" Maximum="128000" Increment="100"
-                                                   HorizontalAlignment="Stretch" Margin="0,12,0,0" Size="Small"/>
+                                                   HorizontalAlignment="Stretch" Margin="0,12,0,0" Size="Small"
+                                                   IsVisible="{Binding IsEditingApiConnection}"/>
 
                                     <!-- Temperature -->
-                                    <TextBlock Grid.Row="5" Grid.Column="0" Text="{loc:Localize Settings_Connections_Temperature}" VerticalAlignment="Center"
-                                               Margin="0,12,0,0" Foreground="{DynamicResource DaisyBaseContentBrush}"/>
-                                    <daisy:DaisyNumericUpDown Grid.Row="5" Grid.Column="1"
+                                    <TextBlock Grid.Row="6" Grid.Column="0" Text="{loc:Localize Settings_Connections_Temperature}" VerticalAlignment="Center"
+                                               Margin="0,12,0,0" Foreground="{DynamicResource DaisyBaseContentBrush}"
+                                               IsVisible="{Binding IsEditingApiConnection}"/>
+                                    <daisy:DaisyNumericUpDown Grid.Row="6" Grid.Column="1"
                                                    Value="{Binding EditTemperature}"
                                                    Minimum="0" Maximum="2" Increment="0.1" FormatString="F1"
-                                                   HorizontalAlignment="Stretch" Margin="0,12,0,0" Size="Small"/>
+                                                   HorizontalAlignment="Stretch" Margin="0,12,0,0" Size="Small"
+                                                   IsVisible="{Binding IsEditingApiConnection}"/>
 
                                     <!-- Capabilities -->
-                                    <TextBlock Grid.Row="6" Grid.Column="0" Text="{loc:Localize Settings_Connections_Capabilities}" VerticalAlignment="Top"
-                                               Margin="0,12,0,0" Foreground="{DynamicResource DaisyBaseContentBrush}"/>
-                                    <StackPanel Grid.Row="6" Grid.Column="1" Margin="0,12,0,0" Spacing="8">
+                                    <TextBlock Grid.Row="7" Grid.Column="0" Text="{loc:Localize Settings_Connections_Capabilities}" VerticalAlignment="Top"
+                                               Margin="0,12,0,0" Foreground="{DynamicResource DaisyBaseContentBrush}"
+                                               IsVisible="{Binding IsEditingApiConnection}"/>
+                                    <StackPanel Grid.Row="7" Grid.Column="1" Margin="0,12,0,0" Spacing="8"
+                                                IsVisible="{Binding IsEditingApiConnection}">
                                         <daisy:DaisyCheckBox IsChecked="{Binding EditSupportsMultiModal}"
                                                   Content="{loc:Localize Settings_Connections_MultiModal}"/>
                                         <daisy:DaisyCheckBox IsChecked="{Binding EditSupportsImageGeneration}"
                                                   Content="{loc:Localize Settings_Connections_ImageGen}"/>
                                     </StackPanel>
 
-                                    <!-- Save/Cancel -->
-                                    <daisy:DaisyButton Grid.Row="7" Grid.Column="1" Content="{loc:Localize Button_Save}"
-                                            Command="{Binding SaveConnectionCommand}"
-                                            Variant="Primary" Margin="0,16,0,0"
-                                            HorizontalAlignment="Right"/>
+                                    <!-- Connection actions -->
+                                    <Grid Grid.Row="8" Grid.Column="1" ColumnDefinitions="Auto,*,Auto"
+                                          Margin="0,16,0,0">
+                                        <daisy:DaisyButton Grid.Column="0"
+                                                Command="{Binding TestConnectionCommand}"
+                                                Variant="Default"
+                                                IsVisible="{Binding ShowTestConnectionAction}"
+                                                IsEnabled="{Binding CanTestConnection}">
+                                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                                <materialIcons:MaterialIcon Kind="Connection" Width="16" Height="16"/>
+                                                <TextBlock Text="{loc:Localize Settings_Connections_TestConnection}"/>
+                                            </StackPanel>
+                                        </daisy:DaisyButton>
+                                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8"
+                                                    HorizontalAlignment="Right">
+                                            <daisy:DaisyButton Content="{loc:Localize Button_Save}"
+                                                    Command="{Binding SaveConnectionCommand}"
+                                                    Variant="Primary"/>
+                                            <daisy:DaisyButton Content="{loc:Localize Button_Cancel}"
+                                                    Command="{Binding CancelConnectionCommand}"
+                                                    Variant="Error"/>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <TextBlock Grid.Row="9" Grid.Column="1" Text="{Binding ConnectionTestStatus}"
+                                               TextWrapping="Wrap" Margin="0,8,0,0"
+                                               Foreground="{DynamicResource DaisyBaseContentBrush}"
+                                               IsVisible="{Binding ConnectionTestStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
                                 </Grid>
                             </StackPanel>
                         </ScrollViewer>
@@ -350,17 +566,11 @@
                         </StackPanel>
                     </Border>
                 </Grid>
-            </TabItem>
+            </Grid>
 
             <!-- AI Providers Tab -->
-            <TabItem>
-                <TabItem.Header>
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                        <materialIcons:MaterialIcon Kind="Robot" Width="16" Height="16"/>
-                        <TextBlock Text="{loc:Localize Settings_Tab_AIProviders}"/>
-                    </StackPanel>
-                </TabItem.Header>
-                <Grid Margin="0,12,0,0" ColumnDefinitions="250,*">
+            <Grid IsVisible="{Binding IsSelected, ElementName=ProvidersSettingsNavigationItem}">
+                <Grid ColumnDefinitions="230,*">
                     <!-- Provider List -->
                     <Border Grid.Column="0" Background="{DynamicResource DaisyBase200Brush}"
                             BorderBrush="{DynamicResource DaisyBase300Brush}"
@@ -383,10 +593,10 @@
                                         <StackPanel Orientation="Horizontal" Spacing="8" Margin="4">
                                             <materialIcons:MaterialIcon Kind="CheckCircle" Width="16" Height="16"
                                                                         Foreground="{DynamicResource DaisySuccessBrush}"
-                                                                        IsVisible="{Binding HasApiKey}"/>
+                                                                        IsVisible="{Binding HasConfiguredAccess}"/>
                                             <materialIcons:MaterialIcon Kind="AlertCircle" Width="16" Height="16"
                                                                         Foreground="{DynamicResource DaisyWarningBrush}"
-                                                                        IsVisible="{Binding !HasApiKey}"/>
+                                                                        IsVisible="{Binding !HasConfiguredAccess}"/>
                                             <TextBlock Text="{Binding ProviderType}" VerticalAlignment="Center"/>
                                         </StackPanel>
                                     </DataTemplate>
@@ -402,108 +612,402 @@
                             CornerRadius="8"
                             Padding="16"
                             Margin="8,0,0,0">
-                        <Grid RowDefinitions="Auto,Auto,*,Auto,Auto">
-                            <!-- Provider Name Header -->
-                            <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8" Margin="0,0,0,16">
-                                <materialIcons:MaterialIcon Kind="Robot" Width="24" Height="24"
-                                                            Foreground="{DynamicResource DaisyPrimaryBrush}"/>
-                                <TextBlock Text="{Binding SelectedProviderApiKey.ProviderType}"
-                                           FontWeight="Bold" FontSize="20" Foreground="{DynamicResource DaisyBaseContentBrush}"/>
-                            </StackPanel>
-
-                            <!-- API Key Section -->
-                            <StackPanel Grid.Row="1" Spacing="8" Margin="0,0,0,16">
+                        <ScrollViewer>
+                            <StackPanel Spacing="16">
+                                <!-- Provider Name Header -->
                                 <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <materialIcons:MaterialIcon Kind="Key" Width="20" Height="20"
+                                    <materialIcons:MaterialIcon Kind="Robot" Width="24" Height="24"
                                                                 Foreground="{DynamicResource DaisyPrimaryBrush}"/>
-                                    <TextBlock Text="{loc:Localize Settings_Providers_ApiKey}" FontWeight="SemiBold" FontSize="16" Foreground="{DynamicResource DaisyBaseContentBrush}"/>
+                                    <TextBlock Text="{Binding SelectedProviderApiKey.ProviderType}"
+                                               FontWeight="Bold" FontSize="20" Foreground="{DynamicResource DaisyBaseContentBrush}"/>
                                 </StackPanel>
 
-                                <daisy:DaisyInput Text="{Binding SelectedProviderApiKey.ApiKey}"
-                                         PasswordChar="•"
-                                         PlaceholderText="{loc:Localize Settings_Providers_ApiKeyWatermark}"
-                                         HorizontalAlignment="Stretch"/>
+                                <!-- OpenAI authentication mode -->
+                                <daisy:DaisyCard Variant="Compact"
+                                                 IsVisible="{Binding IsOpenAiProviderSelected}">
+                                    <StackPanel Spacing="10">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <materialIcons:MaterialIcon Kind="Key" Width="20" Height="20"
+                                                                        Foreground="{DynamicResource DaisyPrimaryBrush}"/>
+                                            <TextBlock Text="{loc:Localize Settings_Providers_OpenAiAccess}"
+                                                       FontWeight="SemiBold" FontSize="16"
+                                                       Foreground="{DynamicResource DaisyBaseContentBrush}"/>
+                                        </StackPanel>
 
-                                <TextBlock Text="{loc:Localize Settings_Providers_Endpoint}" FontWeight="Medium" Margin="0,8,0,0"
-                                           Foreground="{DynamicResource DaisyBaseContentBrush}"/>
-                                <daisy:DaisyInput Text="{Binding SelectedProviderApiKey.CustomEndpoint}"
-                                         PlaceholderText="{loc:Localize Settings_Providers_EndpointWatermark}"
-                                         HorizontalAlignment="Stretch"/>
+                                        <TextBlock Text="{loc:Localize Settings_Providers_AuthenticationMode}"
+                                                   Foreground="{DynamicResource DaisyBaseContentBrush}"/>
+                                        <ComboBox ItemsSource="{Binding OpenAiAccessModes}"
+                                                  SelectedItem="{Binding SelectedOpenAiAccessMode}"
+                                                  IsEnabled="{Binding !IsOpenAiSubscriptionBusy}"
+                                                  HorizontalAlignment="Stretch"
+                                                  AutomationProperties.Name="{loc:Localize Settings_Providers_AuthenticationMode}"
+                                                  AutomationProperties.AutomationId="OpenAiAuthenticationMode">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate x:DataType="ai:AiAccessModeOption">
+                                                    <TextBlock Text="{Binding DisplayName}"
+                                                               Foreground="{DynamicResource DaisyBaseContentBrush}"/>
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
 
-                                <!-- Test Connection -->
-                                <TextBlock Text="{Binding ProviderTestStatus}"
-                                           TextWrapping="Wrap"
-                                           Foreground="{DynamicResource DaisyBaseContentBrush}"
-                                           Margin="0,8,0,0"
-                                           IsVisible="{Binding ProviderTestStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
-                                <daisy:DaisyButton Command="{Binding TestProviderConnectionCommand}"
-                                        IsEnabled="{Binding !IsTestingProviderConnection}"
-                                        Variant="Primary"
-                                        Margin="0,4,0,0">
-                                    <StackPanel Orientation="Horizontal" Spacing="4">
-                                        <materialIcons:MaterialIcon Kind="Connection" Width="16" Height="16"/>
-                                        <TextBlock Text="{loc:Localize Settings_Providers_TestConnection}"/>
                                     </StackPanel>
-                                </daisy:DaisyButton>
-                            </StackPanel>
+                                </daisy:DaisyCard>
 
-                            <!-- Models List (fills remaining space) -->
-                            <Grid Grid.Row="2" RowDefinitions="Auto,Auto,*" Margin="0,0,0,8">
-                                <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
-                                    <materialIcons:MaterialIcon Kind="FormatListBulleted" Width="20" Height="20"
-                                                                Foreground="{DynamicResource DaisyPrimaryBrush}"/>
-                                    <TextBlock Text="{loc:Localize Settings_Providers_AvailableModels}" FontWeight="SemiBold" FontSize="16" Foreground="{DynamicResource DaisyBaseContentBrush}"/>
+                                <StackPanel Spacing="16"
+                                            IsVisible="{Binding ShowProviderApiConfiguration}">
+                                <!-- API Key Section -->
+                                <StackPanel Spacing="8">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <materialIcons:MaterialIcon Kind="Key" Width="20" Height="20"
+                                                                    Foreground="{DynamicResource DaisyPrimaryBrush}"/>
+                                        <TextBlock Text="{loc:Localize Settings_Providers_ApiKey}"
+                                                   FontWeight="SemiBold" FontSize="16"
+                                                   Foreground="{DynamicResource DaisyBaseContentBrush}"/>
+                                    </StackPanel>
+
+                                    <daisy:DaisyInput Text="{Binding SelectedProviderApiKey.ApiKey}"
+                                                     PasswordChar="•"
+                                                     PlaceholderText="{loc:Localize Settings_Providers_ApiKeyWatermark}"
+                                                     HorizontalAlignment="Stretch"/>
+
+                                    <TextBlock Text="{loc:Localize Settings_Providers_Endpoint}"
+                                               FontWeight="Medium" Margin="0,8,0,0"
+                                               Foreground="{DynamicResource DaisyBaseContentBrush}"/>
+                                    <daisy:DaisyInput Text="{Binding SelectedProviderApiKey.CustomEndpoint}"
+                                                     PlaceholderText="{loc:Localize Settings_Providers_EndpointWatermark}"
+                                                     HorizontalAlignment="Stretch"/>
+
+                                    <TextBlock Text="{Binding ProviderTestStatus}"
+                                               TextWrapping="Wrap"
+                                               Foreground="{DynamicResource DaisyBaseContentBrush}"
+                                               Margin="0,8,0,0"
+                                               IsVisible="{Binding ProviderTestStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                    <daisy:DaisyButton Command="{Binding TestProviderConnectionCommand}"
+                                                       IsEnabled="{Binding !IsTestingProviderConnection}"
+                                                       Variant="Primary"
+                                                       HorizontalAlignment="Left"
+                                                       Margin="0,4,0,0">
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <materialIcons:MaterialIcon Kind="Connection" Width="16" Height="16"/>
+                                            <TextBlock Text="{loc:Localize Settings_Providers_TestConnection}"/>
+                                        </StackPanel>
+                                    </daisy:DaisyButton>
                                 </StackPanel>
 
-                                <TextBlock Grid.Row="1" Text="{loc:Localize Settings_Providers_ModelsHint}"
-                                           Foreground="{DynamicResource DaisyBaseContentBrush}" Margin="0,0,0,8"/>
+                                <daisy:DaisyDivider/>
 
-                                <ListBox Grid.Row="2" ItemsSource="{Binding SelectedProviderModels}"
-                                         SelectedItem="{Binding SelectedModelToRemove}"
-                                         MinHeight="100"/>
-                            </Grid>
+                                <!-- Shared model management -->
+                                <StackPanel Spacing="8">
+                                    <TextBlock Text="{loc:Localize Settings_Providers_ModelsHint}"
+                                               TextWrapping="Wrap"
+                                               Foreground="{DynamicResource DaisyBaseContentBrush}"/>
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <daisy:DaisyInput Grid.Column="0"
+                                                         Text="{Binding NewModelName}"
+                                                         PlaceholderText="{loc:Localize Settings_Providers_NewModelWatermark}"
+                                                         Margin="0,0,8,0"/>
+                                        <daisy:DaisyButton Grid.Column="1"
+                                                           Command="{Binding AddModelCommand}"
+                                                           Variant="Default">
+                                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                                <materialIcons:MaterialIcon Kind="Plus" Width="16" Height="16"/>
+                                                <TextBlock Text="{loc:Localize Settings_Connections_Add}"/>
+                                            </StackPanel>
+                                        </daisy:DaisyButton>
+                                    </Grid>
+                                </StackPanel>
 
-                            <!-- Add Model -->
-                            <Grid Grid.Row="3" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
-                                <daisy:DaisyInput Grid.Column="0" Text="{Binding NewModelName}"
-                                         PlaceholderText="{loc:Localize Settings_Providers_NewModelWatermark}" Margin="0,0,8,0"/>
-                                <daisy:DaisyButton Grid.Column="1" Command="{Binding AddModelCommand}">
-                                    <StackPanel Orientation="Horizontal" Spacing="4">
-                                        <materialIcons:MaterialIcon Kind="Plus" Width="16" Height="16"/>
-                                        <TextBlock Text="{loc:Localize Settings_Connections_Add}"/>
-                                    </StackPanel>
-                                </daisy:DaisyButton>
-                            </Grid>
+                                <Grid Height="430"
+                                      RowDefinitions="*,8,*">
+                                    <!-- Text models -->
+                                    <Border Grid.Row="0"
+                                            MinHeight="150"
+                                            Background="{DynamicResource DaisyBase100Brush}"
+                                            BorderBrush="{DynamicResource DaisyBase300Brush}"
+                                            BorderThickness="1"
+                                            CornerRadius="8"
+                                            Padding="12">
+                                        <Grid RowDefinitions="Auto,*" RowSpacing="10">
+                                            <Grid Grid.Row="0" ColumnDefinitions="*,260" ColumnSpacing="12">
+                                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                                                    <materialIcons:MaterialIcon Kind="MessageTextOutline" Width="20" Height="20"
+                                                                                Foreground="{DynamicResource DaisyPrimaryBrush}"/>
+                                                    <TextBlock Text="{loc:Localize Settings_Providers_TextModels}"
+                                                               FontWeight="SemiBold" FontSize="16"
+                                                               Foreground="{DynamicResource DaisyBaseContentBrush}"/>
+                                                    <TextBlock Text="{Binding TextProviderModels.Count, StringFormat='({0})'}"
+                                                               VerticalAlignment="Center"
+                                                               Foreground="{DynamicResource DaisyBaseContentBrush}"/>
+                                                </StackPanel>
+                                                <daisy:DaisyInput Grid.Column="1"
+                                                                 Text="{Binding TextModelSearchQuery}"
+                                                                 PlaceholderText="{loc:Localize Settings_Providers_SearchTextModels}"
+                                                                 AutomationProperties.Name="{loc:Localize Settings_Providers_SearchTextModels}"
+                                                                 AutomationProperties.AutomationId="TextModelSearch"/>
+                                            </Grid>
 
-                            <!-- Model Buttons -->
-                            <StackPanel Grid.Row="4" Orientation="Horizontal" Spacing="8">
-                                <daisy:DaisyButton Command="{Binding RemoveModelCommand}" Variant="Error">
-                                    <StackPanel Orientation="Horizontal" Spacing="4">
-                                        <materialIcons:MaterialIcon Kind="Delete" Width="16" Height="16"/>
-                                        <TextBlock Text="{loc:Localize Settings_Providers_RemoveSelected}"/>
-                                    </StackPanel>
-                                </daisy:DaisyButton>
-                                <daisy:DaisyButton Command="{Binding ResetModelsCommand}">
+                                            <ListBox x:Name="TextProviderModelsList"
+                                                     Grid.Row="1"
+                                                     Classes="provider-models"
+                                                     ItemsSource="{Binding TextProviderModels}"
+                                                     MinHeight="80"
+                                                     AutomationProperties.Name="{loc:Localize Settings_Providers_TextModels}"
+                                                     AutomationProperties.AutomationId="TextProviderModels">
+                                                <ListBox.ItemTemplate>
+                                                    <DataTemplate x:DataType="vm:AiModelOption">
+                                                        <Grid ColumnDefinitions="Auto,Auto"
+                                                              ColumnSpacing="6"
+                                                              HorizontalAlignment="Left">
+                                                            <TextBlock Grid.Column="0"
+                                                                       Text="{Binding ModelId}"
+                                                                       MaxWidth="460"
+                                                                       VerticalAlignment="Center"
+                                                                       TextTrimming="CharacterEllipsis"
+                                                                       ToolTip.Tip="{Binding ModelId}"
+                                                                       Foreground="{DynamicResource DaisyBaseContentBrush}"/>
+                                                            <daisy:DaisyButton Grid.Column="1"
+                                                                               Classes="model-delete"
+                                                                               Tag="{Binding}"
+                                                                               Click="RemoveProviderModel_Click"
+                                                                               Variant="Error"
+                                                                               Size="ExtraSmall"
+                                                                               Shape="Square"
+                                                                               Background="{DynamicResource DaisyErrorBrush}"
+                                                                               Foreground="White"
+                                                                               ToolTip.Tip="{loc:Localize Settings_Providers_RemoveSelected}"
+                                                                               AutomationProperties.Name="{loc:Localize Settings_Providers_RemoveSelected}">
+                                                                <materialIcons:MaterialIcon Kind="Delete" Width="14" Height="14"/>
+                                                            </daisy:DaisyButton>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ListBox.ItemTemplate>
+                                            </ListBox>
+                                        </Grid>
+                                    </Border>
+
+                                    <GridSplitter Grid.Row="1"
+                                                  Height="8"
+                                                  HorizontalAlignment="Stretch"
+                                                  ResizeDirection="Rows"
+                                                  ResizeBehavior="PreviousAndNext"
+                                                  KeyboardIncrement="16"
+                                                  DragIncrement="1"
+                                                  Focusable="True"
+                                                  Background="{DynamicResource DaisyBase300Brush}"
+                                                  AutomationProperties.Name="{loc:Localize Settings_Providers_ModelSplitter}"
+                                                  AutomationProperties.AutomationId="ProviderModelsSplitter"/>
+
+                                    <!-- Image models -->
+                                    <Border Grid.Row="2"
+                                            MinHeight="150"
+                                            Background="{DynamicResource DaisyBase100Brush}"
+                                            BorderBrush="{DynamicResource DaisyBase300Brush}"
+                                            BorderThickness="1"
+                                            CornerRadius="8"
+                                            Padding="12">
+                                        <Grid RowDefinitions="Auto,*" RowSpacing="10">
+                                            <Grid Grid.Row="0" ColumnDefinitions="*,260" ColumnSpacing="12">
+                                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                                                    <materialIcons:MaterialIcon Kind="ImageOutline" Width="20" Height="20"
+                                                                                Foreground="{DynamicResource DaisySuccessBrush}"/>
+                                                    <TextBlock Text="{loc:Localize Settings_Providers_ImageModels}"
+                                                               FontWeight="SemiBold" FontSize="16"
+                                                               Foreground="{DynamicResource DaisyBaseContentBrush}"/>
+                                                    <TextBlock Text="{Binding ImageProviderModels.Count, StringFormat='({0})'}"
+                                                               VerticalAlignment="Center"
+                                                               Foreground="{DynamicResource DaisyBaseContentBrush}"/>
+                                                </StackPanel>
+                                                <daisy:DaisyInput Grid.Column="1"
+                                                                 Text="{Binding ImageModelSearchQuery}"
+                                                                 PlaceholderText="{loc:Localize Settings_Providers_SearchImageModels}"
+                                                                 AutomationProperties.Name="{loc:Localize Settings_Providers_SearchImageModels}"
+                                                                 AutomationProperties.AutomationId="ImageModelSearch"/>
+                                            </Grid>
+
+                                            <ListBox x:Name="ImageProviderModelsList"
+                                                     Grid.Row="1"
+                                                     Classes="provider-models"
+                                                     ItemsSource="{Binding ImageProviderModels}"
+                                                     MinHeight="80"
+                                                     AutomationProperties.Name="{loc:Localize Settings_Providers_ImageModels}"
+                                                     AutomationProperties.AutomationId="ImageProviderModels">
+                                                <ListBox.ItemTemplate>
+                                                    <DataTemplate x:DataType="vm:AiModelOption">
+                                                        <Grid ColumnDefinitions="Auto,Auto"
+                                                              ColumnSpacing="6"
+                                                              HorizontalAlignment="Left">
+                                                            <TextBlock Grid.Column="0"
+                                                                       Text="{Binding ModelId}"
+                                                                       MaxWidth="460"
+                                                                       VerticalAlignment="Center"
+                                                                       TextTrimming="CharacterEllipsis"
+                                                                       ToolTip.Tip="{Binding ModelId}"
+                                                                       Foreground="{DynamicResource DaisyBaseContentBrush}"/>
+                                                            <daisy:DaisyButton Grid.Column="1"
+                                                                               Classes="model-delete"
+                                                                               Tag="{Binding}"
+                                                                               Click="RemoveProviderModel_Click"
+                                                                               Variant="Error"
+                                                                               Size="ExtraSmall"
+                                                                               Shape="Square"
+                                                                               Background="{DynamicResource DaisyErrorBrush}"
+                                                                               Foreground="White"
+                                                                               ToolTip.Tip="{loc:Localize Settings_Providers_RemoveSelected}"
+                                                                               AutomationProperties.Name="{loc:Localize Settings_Providers_RemoveSelected}">
+                                                                <materialIcons:MaterialIcon Kind="Delete" Width="14" Height="14"/>
+                                                            </daisy:DaisyButton>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ListBox.ItemTemplate>
+                                            </ListBox>
+                                        </Grid>
+                                    </Border>
+                                </Grid>
+
+                                <daisy:DaisyButton Command="{Binding ResetModelsCommand}"
+                                                   Variant="Default"
+                                                   HorizontalAlignment="Left">
                                     <StackPanel Orientation="Horizontal" Spacing="4">
                                         <materialIcons:MaterialIcon Kind="Refresh" Width="16" Height="16"/>
                                         <TextBlock Text="{loc:Localize Settings_Providers_ResetDefaults}"/>
                                     </StackPanel>
                                 </daisy:DaisyButton>
+                                </StackPanel>
+
+                                <!-- ChatGPT subscription -->
+                                <daisy:DaisyCard Variant="Compact"
+                                                 IsVisible="{Binding ShowOpenAiSubscriptionConfiguration}">
+                                    <StackPanel Spacing="10">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <materialIcons:MaterialIcon Kind="Robot" Width="20" Height="20"
+                                                                        Foreground="{DynamicResource DaisyPrimaryBrush}"/>
+                                            <TextBlock Text="{loc:Localize Settings_Providers_ChatGptSubscription}"
+                                                       FontWeight="SemiBold" FontSize="16"
+                                                       Foreground="{DynamicResource DaisyBaseContentBrush}"/>
+                                        </StackPanel>
+
+                                        <StackPanel Orientation="Horizontal"
+                                                    Spacing="8"
+                                                    AutomationProperties.LiveSetting="Polite"
+                                                    AutomationProperties.AutomationId="OpenAiCodexStatus">
+                                            <materialIcons:MaterialIcon Kind="CheckCircle"
+                                                                        Width="18"
+                                                                        Height="18"
+                                                                        Foreground="{DynamicResource DaisySuccessBrush}"
+                                                                        IsVisible="{Binding IsOpenAiSubscriptionAuthenticated}"/>
+                                            <materialIcons:MaterialIcon Kind="AlertCircle"
+                                                                        Width="18"
+                                                                        Height="18"
+                                                                        Foreground="{DynamicResource DaisyWarningBrush}"
+                                                                        IsVisible="{Binding !IsOpenAiSubscriptionAuthenticated}"/>
+                                            <TextBlock Text="{Binding OpenAiSubscriptionStatus}"
+                                                       TextWrapping="Wrap"
+                                                       Foreground="{DynamicResource DaisyBaseContentBrush}"/>
+                                        </StackPanel>
+
+                                        <TextBlock Text="{loc:Localize Settings_Providers_CodexModel}"
+                                                   Foreground="{DynamicResource DaisyBaseContentBrush}"/>
+                                        <ComboBox ItemsSource="{Binding OpenAiSubscriptionModels}"
+                                                  SelectedItem="{Binding SelectedOpenAiSubscriptionModel}"
+                                                  IsEnabled="{Binding !IsOpenAiSubscriptionBusy}"
+                                                  HorizontalAlignment="Stretch"
+                                                  AutomationProperties.Name="{loc:Localize Settings_Providers_CodexModel}"
+                                                  AutomationProperties.AutomationId="OpenAiCodexModel">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate x:DataType="ai:AiSubscriptionModel">
+                                                    <TextBlock Text="{Binding DisplayName}"
+                                                               TextTrimming="CharacterEllipsis"
+                                                               Foreground="{DynamicResource DaisyBaseContentBrush}"/>
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
+
+                                        <StackPanel Spacing="5"
+                                                    IsVisible="{Binding ShowOpenAiSubscriptionReasoningEffort}">
+                                            <TextBlock Text="{loc:Localize Settings_Providers_CodexReasoningEffort}"
+                                                       Foreground="{DynamicResource DaisyBaseContentBrush}"/>
+                                            <ComboBox ItemsSource="{Binding OpenAiSubscriptionReasoningEfforts}"
+                                                      SelectedItem="{Binding SelectedOpenAiSubscriptionReasoningEffort}"
+                                                      IsEnabled="{Binding !IsOpenAiSubscriptionBusy}"
+                                                      HorizontalAlignment="Stretch"
+                                                      AutomationProperties.Name="{loc:Localize Settings_Providers_CodexReasoningEffort}"
+                                                      AutomationProperties.AutomationId="OpenAiCodexReasoningEffort">
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate x:DataType="ai:AiSubscriptionReasoningEffort">
+                                                        <StackPanel>
+                                                            <TextBlock Text="{Binding DisplayName}"
+                                                                       Foreground="{DynamicResource DaisyBaseContentBrush}"/>
+                                                            <TextBlock Text="{Binding Description}"
+                                                                       FontSize="10"
+                                                                       Opacity="0.7"
+                                                                       TextWrapping="Wrap"
+                                                                       Foreground="{DynamicResource DaisyBaseContentBrush}"/>
+                                                        </StackPanel>
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
+                                            </ComboBox>
+                                        </StackPanel>
+
+                                        <StackPanel Spacing="5"
+                                                    IsVisible="{Binding ShowOpenAiSubscriptionServiceTier}">
+                                            <TextBlock Text="{loc:Localize Settings_Providers_CodexSpeed}"
+                                                       Foreground="{DynamicResource DaisyBaseContentBrush}"/>
+                                            <ComboBox ItemsSource="{Binding OpenAiSubscriptionServiceTiers}"
+                                                      SelectedItem="{Binding SelectedOpenAiSubscriptionServiceTier}"
+                                                      IsEnabled="{Binding !IsOpenAiSubscriptionBusy}"
+                                                      HorizontalAlignment="Stretch"
+                                                      AutomationProperties.Name="{loc:Localize Settings_Providers_CodexSpeed}"
+                                                      AutomationProperties.AutomationId="OpenAiCodexSpeed">
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate x:DataType="ai:AiSubscriptionServiceTier">
+                                                        <StackPanel>
+                                                            <TextBlock Text="{Binding DisplayName}"
+                                                                       Foreground="{DynamicResource DaisyBaseContentBrush}"/>
+                                                            <TextBlock Text="{Binding Description}"
+                                                                       FontSize="10"
+                                                                       Opacity="0.7"
+                                                                       TextWrapping="Wrap"
+                                                                       IsVisible="{Binding !!Description}"
+                                                                       Foreground="{DynamicResource DaisyBaseContentBrush}"/>
+                                                        </StackPanel>
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
+                                            </ComboBox>
+                                        </StackPanel>
+
+                                        <TextBlock Text="{loc:Localize Settings_Providers_CodexInstallRequired}"
+                                                   IsVisible="{Binding OpenAiRequiresCodexInstallation}"
+                                                   TextWrapping="Wrap"
+                                                   Foreground="{DynamicResource DaisyWarningBrush}"/>
+
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <daisy:DaisyButton Content="{loc:Localize Settings_Providers_CodexConnect}"
+                                                               Command="{Binding ConnectOpenAiSubscriptionCommand}"
+                                                               IsVisible="{Binding ShowOpenAiSubscriptionConnectAction}"
+                                                               Variant="Primary"
+                                                               AutomationProperties.AutomationId="OpenAiCodexConnect"/>
+                                            <daisy:DaisyButton Content="{loc:Localize Settings_Providers_CodexSignIn}"
+                                                               Command="{Binding LoginOpenAiSubscriptionCommand}"
+                                                               IsVisible="{Binding ShowOpenAiSubscriptionSetupActions}"
+                                                               Variant="Primary"
+                                                               AutomationProperties.AutomationId="OpenAiCodexSignIn"/>
+                                            <daisy:DaisyButton Content="{loc:Localize Settings_Providers_CodexLogout}"
+                                                               Command="{Binding LogoutOpenAiSubscriptionCommand}"
+                                                               IsVisible="{Binding ShowOpenAiSubscriptionLogoutAction}"
+                                                               Variant="Warning"
+                                                               AutomationProperties.AutomationId="OpenAiCodexLogout"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </daisy:DaisyCard>
                             </StackPanel>
-                        </Grid>
+                        </ScrollViewer>
                     </Border>
                 </Grid>
-            </TabItem>
+            </Grid>
 
             <!-- About Tab -->
-            <TabItem>
-                <TabItem.Header>
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                        <materialIcons:MaterialIcon Kind="InformationOutline" Width="16" Height="16"/>
-                        <TextBlock Text="{loc:Localize Settings_Tab_About}"/>
-                    </StackPanel>
-                </TabItem.Header>
-                <ScrollViewer Margin="0,12,0,0">
+            <Grid IsVisible="{Binding IsSelected, ElementName=AboutSettingsNavigationItem}">
+                <ScrollViewer>
                     <StackPanel Spacing="16" MaxWidth="600" HorizontalAlignment="Left">
                         <!-- App Info -->
                         <Border Background="{DynamicResource DaisyBase200Brush}"
@@ -545,14 +1049,16 @@
                         </Border>
                     </StackPanel>
                 </ScrollViewer>
-            </TabItem>
-        </daisy:DaisyTabs>
+            </Grid>
+            </Grid>
+        </Grid>
 
         <!-- Footer Buttons -->
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12" Margin="0,16,0,0">
             <daisy:DaisyButton Content="{loc:Localize Settings_Button_ResetDefaults}"
                                Command="{Binding ResetCommand}"
-                               IsVisible="{Binding IsSelected, ElementName=GeneralSettingsTab}"/>
+                               Variant="Default"
+                               IsVisible="{Binding IsSelected, ElementName=GeneralSettingsNavigationItem}"/>
             <daisy:DaisyButton Content="{loc:Localize Settings_Button_Close}" Click="CloseButton_Click" Variant="Primary"/>
         </StackPanel>
     </Grid>

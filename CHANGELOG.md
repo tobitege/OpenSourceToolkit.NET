@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Updated all direct NuGet package references to their current stable versions; retained the newer `Material.Icons.Avalonia` prerelease.
+- Refreshed the image-generation model catalogs for OpenAI, OpenRouter, and Google, with OpenRouter capability discovery from its public models API.
+- Routed direct OpenAI image generation through LLM Tornado's image-generation API.
+- Added Hugging Face as a provider with OpenAI-compatible chat, authenticated live model discovery, and HF-Inference text-to-image generation.
+- Replaced obsolete Avalonia bitmap encoding and SkiaSharp text drawing overloads.
+- Increased the application version to 1.0.2.
+- Upgraded all projects to .NET 10 Windows and restricted builds and runtime assets to Windows x64.
+- Removed redundant `System.Text.Json` and `System.Net.Http` package references now supplied by .NET 10.
+- Kept the AI assistant enabled without a loaded workspace image so text chat and text-to-image generation remain available.
+
 ## [1.0.1] - 2026-06-17
 
 ### Changed

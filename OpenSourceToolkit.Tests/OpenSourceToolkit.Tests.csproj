@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net10.0-windows</TargetFramework>
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>disable</ImplicitUsings>
     <OutputPath Condition="'$(Configuration)'=='Debug'">..\bin\debug\</OutputPath>
@@ -9,10 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.6.0" />
-    <PackageReference Include="MSTest.TestAdapter" Version="4.2.3" />
-    <PackageReference Include="MSTest.TestFramework" Version="4.2.3" />
-    <PackageReference Include="SkiaSharp" Version="3.119.4" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.8.1" />
+    <PackageReference Include="MSTest.TestAdapter" Version="4.3.2" />
+    <PackageReference Include="MSTest.TestFramework" Version="4.3.2" />
+    <PackageReference Include="SkiaSharp" Version="4.150.1" />
   </ItemGroup>
 
   <ItemGroup>

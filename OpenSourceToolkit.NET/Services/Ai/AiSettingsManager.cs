@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -129,13 +129,19 @@ namespace OpenSourceToolkit.NET.Services.Ai
             connection.CustomApiKey = SecureKeyPrefix + storageKey;
         }
 
-        public AiConnection AddConnection(string name, string providerType, string modelId, string customApiKey = null)
+        public AiConnection AddConnection(
+            string name,
+            string providerType,
+            string modelId,
+            string customApiKey = null,
+            string customEndpoint = null)
         {
             var connection = new AiConnection
             {
                 Name = name,
                 ProviderType = providerType,
-                ModelId = modelId
+                ModelId = modelId,
+                CustomEndpoint = customEndpoint
             };
             Connections.Add(connection);
 
@@ -202,26 +208,29 @@ namespace OpenSourceToolkit.NET.Services.Ai
 
         public List<string> GetProviderModels(string providerType)
         {
-            if (ProviderModels.TryGetValue(providerType, out var models) && models.Count > 0)
-                return new List<string>(models);
-
             var type = ParseProviderType(providerType);
-            return AiConnectionConfig.GetDefaultModels(type);
+            if (ProviderModels.TryGetValue(providerType, out var models) && models.Count > 0)
+                return models.FindAll(model => !AiConnectionConfig.IsExcludedModel(model));
+
+            return GetDefaultProviderModels(type);
         }
 
         public void SetProviderModels(string providerType, List<string> models)
         {
-            ProviderModels[providerType] = new List<string>(models);
+            ProviderModels[providerType] = models.FindAll(model => !AiConnectionConfig.IsExcludedModel(model));
         }
 
         public void ResetProviderModels(string providerType)
         {
             var type = ParseProviderType(providerType);
-            ProviderModels[providerType] = AiConnectionConfig.GetDefaultModels(type);
+            ProviderModels[providerType] = GetDefaultProviderModels(type);
         }
 
         public void AddProviderModel(string providerType, string modelId)
         {
+            if (AiConnectionConfig.IsExcludedModel(modelId))
+                return;
+
             if (!ProviderModels.ContainsKey(providerType))
                 ProviderModels[providerType] = GetProviderModels(providerType);
 
@@ -292,8 +301,22 @@ namespace OpenSourceToolkit.NET.Services.Ai
             return AiConnectionConfig.GetDefaultEndpoint(type);
         }
 
+        private static List<string> GetDefaultProviderModels(AiProviderType providerType)
+        {
+            var models = AiConnectionConfig.GetDefaultModels(providerType);
+            foreach (var imageModel in AiConnectionConfig.GetDefaultImageModels(providerType))
+            {
+                if (!models.Contains(imageModel))
+                    models.Add(imageModel);
+            }
+            return models;
+        }
+
         private static AiProviderType ParseProviderType(string providerType)
         {
+            if (string.Equals(providerType, "OpenAI-Compatible", StringComparison.Ordinal))
+                return AiProviderType.OpenAICompatible;
+
             if (Enum.TryParse<AiProviderType>(providerType, out var result))
                 return result;
             return AiProviderType.OpenAI;
@@ -301,7 +324,12 @@ namespace OpenSourceToolkit.NET.Services.Ai
 
         public static readonly string[] SupportedProviders = new[]
         {
-            "OpenAI", "OpenRouter", "Anthropic", "Google", "Ollama", "LMStudio"
+            "OpenAI", "OpenRouter", "HuggingFace", "Anthropic", "Google", "Ollama", "LMStudio"
+        };
+
+        public static readonly string[] SupportedConnectionProviders = new[]
+        {
+            "OpenAI", "OpenAI-Compatible", "Codex", "OpenRouter", "HuggingFace", "Anthropic", "Google", "Ollama", "LMStudio"
         };
 
         #endregion

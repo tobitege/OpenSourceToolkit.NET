@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using OpenSourceToolkit.AI.Models;
 using OpenSourceToolkit.AI.Providers;
 
@@ -17,6 +17,9 @@ namespace OpenSourceToolkit.AI
                 case AiProviderType.OpenRouter:
                 case AiProviderType.LMStudio:
                     return new OpenAiCompatibleProvider(settings);
+
+                case AiProviderType.HuggingFace:
+                    return new HuggingFaceProvider(settings);
 
                 case AiProviderType.Anthropic:
                     return new AnthropicProvider(settings);

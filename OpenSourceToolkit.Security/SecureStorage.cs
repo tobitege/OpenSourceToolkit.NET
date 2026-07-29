@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -543,16 +543,16 @@ namespace OpenSourceToolkit.Security
             var combined = $"{_appIdentifier}:{machineId}:{userId}";
 
             // Use PBKDF2 to derive a strong key
-            using (var deriveBytes = new Rfc2898DeriveBytes(
+            var derivedBytes = Rfc2898DeriveBytes.Pbkdf2(
                 Encoding.UTF8.GetBytes(combined),
                 Encoding.UTF8.GetBytes(_appIdentifier + ".Salt.v1"),
                 100000,
-                HashAlgorithmName.SHA256))
-            {
-                var key = deriveBytes.GetBytes(32);
-                var iv = deriveBytes.GetBytes(16);
-                return (key, iv);
-            }
+                HashAlgorithmName.SHA256,
+                48);
+
+            var key = derivedBytes[..32];
+            var iv = derivedBytes[32..];
+            return (key, iv);
         }
 
         private static string GetLinuxMachineId()

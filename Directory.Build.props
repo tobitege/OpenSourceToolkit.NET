@@ -8,10 +8,16 @@
   IMPORTANT: Do not commit this file with UseLocalFlowery=true
   -->
   <PropertyGroup>
+    <!-- This repository targets Windows x64 exclusively. -->
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <PlatformTarget>x64</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+
     <!-- Toggle this to switch between NuGet and local project reference -->
     <UseLocalFlowery>false</UseLocalFlowery>
 
     <!-- Path to Flowery.NET project (relative to this file) -->
     <FloweryPath>D:\github\Flowery.NET\Flowery.NET</FloweryPath>
+
   </PropertyGroup>
 </Project>

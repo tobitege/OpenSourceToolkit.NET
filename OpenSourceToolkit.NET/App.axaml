@@ -1,4 +1,4 @@
-<Application xmlns="https://github.com/avaloniaui"
+﻿<Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="using:OpenSourceToolkit.NET"
              xmlns:converters="using:OpenSourceToolkit.NET.Converters"
@@ -98,6 +98,16 @@
         <!-- Label styles -->
         <Style Selector="Label">
             <Setter Property="Foreground" Value="{DynamicResource DaisyBaseContentBrush}"/>
+        </Style>
+
+        <!-- Tooltips use neutral surface/content colors so their text remains readable in every theme. -->
+        <Style Selector="ToolTip">
+            <Setter Property="Background" Value="{DynamicResource DaisyNeutralBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource DaisyNeutralContentBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource DaisyBase300Brush}"/>
+        </Style>
+        <Style Selector="ToolTip TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource DaisyNeutralContentBrush}"/>
         </Style>
         
         <!-- Border defaults -->

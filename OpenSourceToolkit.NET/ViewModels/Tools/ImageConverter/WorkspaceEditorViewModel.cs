@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -84,6 +84,13 @@ namespace OpenSourceToolkit.NET.ViewModels.Tools.ImageConverter
                     OnPropertyChanged(nameof(CanEditSingleImage));
                 }
             }
+        }
+
+        private bool _isLoadingWorkspaceImage;
+        public bool IsLoadingWorkspaceImage
+        {
+            get => _isLoadingWorkspaceImage;
+            set => SetProperty(ref _isLoadingWorkspaceImage, value);
         }
 
         // ═══════════════════════════════════════════════════════════════════════════
@@ -942,8 +949,13 @@ namespace OpenSourceToolkit.NET.ViewModels.Tools.ImageConverter
             if (CheckUnsavedChangesAsync != null && !await CheckUnsavedChangesAsync())
                 return;
 
+            IsLoadingWorkspaceImage = true;
             try
             {
+                await global::Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(
+                    () => { },
+                    global::Avalonia.Threading.DispatcherPriority.Background);
+
                 byte[] previewBytes = _imageProcessor.ConvertToPreviewPng(rawBytes);
                 int width = 0, height = 0;
                 try
@@ -990,6 +1002,10 @@ namespace OpenSourceToolkit.NET.ViewModels.Tools.ImageConverter
             catch (Exception ex)
             {
                 Console.WriteLine($"Error loading thumbnail to workspace: {ex.Message}");
+            }
+            finally
+            {
+                IsLoadingWorkspaceImage = false;
             }
         }
 
