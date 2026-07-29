@@ -19,6 +19,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed redundant `System.Text.Json` and `System.Net.Http` package references now supplied by .NET 10.
 - Kept the AI assistant enabled without a loaded workspace image so text chat and text-to-image generation remain available.
 
+## [1.0.2] - 2026-07-29
+
+### Security
+
+- Updated `Magick.NET-Q8-AnyCPU` to `14.15.0`.
+
+### Fixed
+
+- Prevented parallel localization tests from racing over shared culture state.
+
 ## [1.0.1] - 2026-06-17
 
 ### Changed
