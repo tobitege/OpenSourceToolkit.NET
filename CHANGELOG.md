@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.3] - 2026-07-31
+
 ### Changed
 
 - Updated all direct NuGet package references to their current stable versions; retained the newer `Material.Icons.Avalonia` prerelease.
@@ -14,10 +16,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Routed direct OpenAI image generation through LLM Tornado's image-generation API.
 - Added Hugging Face as a provider with OpenAI-compatible chat, authenticated live model discovery, and HF-Inference text-to-image generation.
 - Replaced obsolete Avalonia bitmap encoding and SkiaSharp text drawing overloads.
-- Increased the application version to 1.0.2.
+- Increased the application version to 1.0.3.
 - Upgraded all projects to .NET 10 Windows and restricted builds and runtime assets to Windows x64.
 - Removed redundant `System.Text.Json` and `System.Net.Http` package references now supplied by .NET 10.
 - Kept the AI assistant enabled without a loaded workspace image so text chat and text-to-image generation remain available.
+
+### Fixed
+
+- Restored connection-editor interaction after selecting or typing a model.
+- Added confirmed conversation rollback that restores the selected bubble text to the prompt.
+- Corrected AI response roles, image-model routing, and completion-status updates.
 
 ## [1.0.2] - 2026-07-29
 

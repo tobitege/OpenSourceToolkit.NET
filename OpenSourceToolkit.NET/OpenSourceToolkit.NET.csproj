@@ -2,9 +2,9 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows</TargetFramework>
-    <Version>1.0.2</Version>
-    <AssemblyVersion>1.0.2.0</AssemblyVersion>
-    <FileVersion>1.0.2.0</FileVersion>
+    <Version>1.0.3</Version>
+    <AssemblyVersion>1.0.3.0</AssemblyVersion>
+    <FileVersion>1.0.3.0</FileVersion>
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>disable</ImplicitUsings>
     <OutputPath Condition="'$(Configuration)'=='Debug'">..\bin\debug\</OutputPath>

@@ -37,6 +37,36 @@ namespace OpenSourceToolkit.Tests
         }
 
         [TestMethod]
+        public void SelectingKnownModel_UpdatesImageGenerationCapability()
+        {
+            var viewModel = (SettingsViewModel)RuntimeHelpers.GetUninitializedObject(typeof(SettingsViewModel));
+            SetField(viewModel, "_editSelectedProvider", "OpenRouter");
+            SetField(viewModel, "_editSupportsImageGeneration", false);
+            viewModel.EditAvailableModelOptions = new List<AiModelOption>
+            {
+                new AiModelOption("google/gemini-3.1-flash-lite-image", true),
+                new AiModelOption("anthropic/claude-sonnet-4.5", false)
+            };
+
+            viewModel.EditSelectedModel = "google/gemini-3.1-flash-lite-image";
+
+            Assert.IsTrue(viewModel.EditSupportsImageGeneration);
+            Assert.IsTrue(viewModel.IsEditImageGenerationCapabilityDetected);
+            Assert.IsFalse(viewModel.CanEditImageGenerationCapability);
+
+            viewModel.EditSelectedModel = "anthropic/claude-sonnet-4.5";
+
+            Assert.IsFalse(viewModel.EditSupportsImageGeneration);
+            Assert.IsFalse(viewModel.IsEditImageGenerationCapabilityDetected);
+            Assert.IsTrue(viewModel.CanEditImageGenerationCapability);
+
+            viewModel.EditSupportsImageGeneration = true;
+            viewModel.EditSelectedModel = "anthropic/claude-sonnet-4.5";
+
+            Assert.IsTrue(viewModel.EditSupportsImageGeneration);
+        }
+
+        [TestMethod]
         public void SaveConnection_CompletesWithSavedSelectionStillOpen()
         {
             var viewModel = (SettingsViewModel)RuntimeHelpers.GetUninitializedObject(typeof(SettingsViewModel));
@@ -384,8 +414,31 @@ namespace OpenSourceToolkit.Tests
             Assert.AreEqual("0", (string)modelPicker.Attribute("MinimumPopulateDelay"));
             Assert.AreEqual("600", (string)modelPicker.Attribute("MaxDropDownHeight"));
             Assert.AreEqual("False", (string)modelPicker.Attribute("ClearSelectionOnLostFocus"));
-            Assert.AreEqual("ConnectionModelPicker_GotFocus", (string)modelPicker.Attribute("GotFocus"));
+            Assert.IsNull(modelPicker.Attribute("GotFocus"));
             Assert.IsNull(modelPicker.Attribute("SelectedItem"));
+
+            var popupStyle = document
+                .Descendants()
+                .Single(element =>
+                    element.Name.LocalName == "Style" &&
+                    (string)element.Attribute("Selector") ==
+                    "AutoCompleteBox#ConnectionModelPicker /template/ Popup#PART_Popup");
+            var popupDismissSetter = popupStyle
+                .Elements()
+                .Single(element =>
+                    element.Name.LocalName == "Setter" &&
+                    (string)element.Attribute("Property") == "OverlayDismissEventPassThrough");
+            Assert.AreEqual("True", (string)popupDismissSetter.Attribute("Value"));
+
+            var imageGenerationCapability = document
+                .Descendants()
+                .Single(element =>
+                    element.Name.LocalName == "DaisyCheckBox" &&
+                    (string)element.Attribute("IsChecked") ==
+                    "{Binding EditSupportsImageGeneration}");
+            Assert.AreEqual(
+                "{Binding CanEditImageGenerationCapability}",
+                (string)imageGenerationCapability.Attribute("IsEnabled"));
 
             var itemTemplate = modelPicker
                 .Descendants()

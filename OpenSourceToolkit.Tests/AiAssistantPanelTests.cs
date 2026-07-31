@@ -1,13 +1,18 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OpenSourceToolkit.NET.Services;
+using OpenSourceToolkit.NET.Services.Ai;
 using OpenSourceToolkit.NET.ViewModels.Tools.ImageConverter;
 using OpenSourceToolkit.NET.ViewModels.Tools.ImageConverter.Models;
+using OpenSourceToolkit.NET.Views.Tools.ImageConverter;
 
 namespace OpenSourceToolkit.Tests
 {
@@ -202,14 +207,22 @@ namespace OpenSourceToolkit.Tests
                 .Where(element => element.Name.LocalName == "DaisyButton")
                 .ToList();
 
-            Assert.AreEqual(2, actionButtons.Count);
+            Assert.AreEqual(3, actionButtons.Count);
             Assert.IsTrue(actionButtons.Any(button => (string)button.Attribute("Click") == "OnCopyMessageClicked"));
             var deleteButton = actionButtons.Single(button => (string)button.Attribute("Click") == "OnDeleteMessageClicked");
+            var revertButton = actionButtons.Single(button =>
+                (string)button.Attribute("Command") ==
+                "{Binding $parent[UserControl].((imgvm:AiAssistantViewModel)DataContext).RevertToMessageCommand}");
             Assert.IsTrue(actionButtons.All(button => (string)button.Attribute("Variant") == "Ghost"));
             Assert.AreEqual(
                 "{DynamicResource DaisyErrorBrush}",
                 (string)deleteButton.Descendants().Single(element => element.Name.LocalName == "PathIcon").Attribute("Foreground"));
-            Assert.IsTrue(actionButtons.All(button => (string)button.Attribute("Tag") == "{Binding}"));
+            Assert.AreEqual("{loc:Localize AiAssistant_RevertTo}", (string)revertButton.Attribute("ToolTip.Tip"));
+            Assert.AreEqual(
+                "{StaticResource UndoIcon}",
+                (string)revertButton.Descendants().Single(element => element.Name.LocalName == "PathIcon").Attribute("Data"));
+            Assert.AreEqual("{Binding}", (string)revertButton.Attribute("CommandParameter"));
+            Assert.AreEqual("{Binding}", (string)deleteButton.Attribute("Tag"));
         }
 
         [TestMethod]
@@ -287,6 +300,236 @@ namespace OpenSourceToolkit.Tests
             Assert.AreSame(second, viewModel.ChatMessages[0]);
             Assert.AreEqual(1, changeCount);
             Assert.IsTrue(viewModel.HasMessages);
+        }
+
+        [TestMethod]
+        public async Task DeleteThenRetry_ResetsSubscriptionThreadAndAddsAssistantResponse()
+        {
+            var session = new FakeSubscriptionSession();
+            await using var manager = new AiAccessManager(new FakeSubscriptionSessionFactory(session));
+            await manager.SwitchModeAsync(AiAccessMode.CodexOAuth);
+            await manager.RunSubscriptionTurnAsync("Old prompt", _ => Task.CompletedTask);
+
+            var viewModel = new AiAssistantViewModel(manager);
+            var deletedAnswer = ChatMessageItem.Assistant("Delete this old answer");
+            viewModel.ChatMessages.Add(ChatMessageItem.User("Earlier prompt"));
+            viewModel.ChatMessages.Add(deletedAnswer);
+            viewModel.DeleteMessageCommand.Execute(deletedAnswer);
+            SetField(
+                viewModel,
+                "_currentConfig",
+                new AiConnectionConfig
+                {
+                    ProviderType = AiProviderType.Codex,
+                    ModelId = FakeSubscriptionSession.ModelId
+                });
+            SetField(viewModel, "_aiCts", new CancellationTokenSource());
+            var runSubscription = typeof(AiAssistantViewModel).GetMethod(
+                "RunSubscriptionTextAsync",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+
+            Assert.IsNotNull(runSubscription);
+            await (Task)runSubscription.Invoke(viewModel, new object[] { "Retried prompt" });
+
+            Assert.AreEqual(2, session.StartThreadCount);
+            Assert.AreEqual(2, viewModel.ChatMessages.Count);
+            Assert.AreEqual(ChatMessageRole.Assistant, viewModel.ChatMessages[1].Role);
+            Assert.AreEqual(FakeSubscriptionSession.ResponseText, viewModel.ChatMessages[1].Content);
+            Assert.IsFalse(viewModel.ChatMessages[1].IsStreaming);
+            Assert.IsNull(viewModel.ChatMessages[1].Footer);
+        }
+
+        [TestMethod]
+        public void ChatMessageStatusChanges_NotifyBoundProperties()
+        {
+            var message = ChatMessageItem.Assistant(string.Empty, isStreaming: true);
+            var changedProperties = new List<string>();
+            message.PropertyChanged += (_, args) => changedProperties.Add(args.PropertyName);
+
+            message.Footer = "Thinking...";
+            message.Footer = null;
+            message.IsStreaming = false;
+            message.IsError = true;
+            message.IsCancelled = true;
+            message.IsSuccess = true;
+
+            Assert.AreEqual(
+                2,
+                changedProperties.Count(property => property == nameof(ChatMessageItem.Footer)));
+            CollectionAssert.Contains(changedProperties, nameof(ChatMessageItem.IsStreaming));
+            CollectionAssert.Contains(changedProperties, nameof(ChatMessageItem.IsError));
+            CollectionAssert.Contains(changedProperties, nameof(ChatMessageItem.IsCancelled));
+            CollectionAssert.Contains(changedProperties, nameof(ChatMessageItem.IsSuccess));
+        }
+
+        [TestMethod]
+        public void RequestRouting_UsesEffectiveImageGenerationCapability()
+        {
+            var viewModel = new AiAssistantViewModel();
+            var configField = typeof(AiAssistantViewModel).GetField(
+                "_currentConfig",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            var connectionField = typeof(AiAssistantViewModel).GetField(
+                "_currentAiConnection",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            var shouldGenerateImage = typeof(AiAssistantViewModel).GetMethod(
+                "ShouldGenerateImageRequest",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+
+            Assert.IsNotNull(configField);
+            Assert.IsNotNull(connectionField);
+            Assert.IsNotNull(shouldGenerateImage);
+            configField.SetValue(
+                viewModel,
+                new AiConnectionConfig
+                {
+                    ProviderType = AiProviderType.OpenRouter,
+                    ModelId = "google/gemini-3.1-flash-lite-image"
+                });
+            connectionField.SetValue(
+                viewModel,
+                new AiConnectionData
+                {
+                    ProviderType = "OpenRouter",
+                    ModelId = "google/gemini-3.1-flash-lite-image",
+                    SupportsImageGeneration = false
+                });
+
+            Assert.AreEqual(true, shouldGenerateImage.Invoke(viewModel, null));
+
+            configField.SetValue(
+                viewModel,
+                new AiConnectionConfig
+                {
+                    ProviderType = AiProviderType.OpenRouter,
+                    ModelId = "anthropic/claude-sonnet-4.5"
+                });
+
+            Assert.AreEqual(false, shouldGenerateImage.Invoke(viewModel, null));
+
+            connectionField.SetValue(
+                viewModel,
+                new AiConnectionData
+                {
+                    ProviderType = "OpenRouter",
+                    ModelId = "custom-image-generator",
+                    SupportsImageGeneration = true
+                });
+
+            Assert.AreEqual(true, shouldGenerateImage.Invoke(viewModel, null));
+        }
+
+        [TestMethod]
+        public void RevertCommand_IsDisabledWhileAiIsProcessing()
+        {
+            var viewModel = new AiAssistantViewModel();
+            var message = ChatMessageItem.User("Prompt");
+            viewModel.ChatMessages.Add(message);
+            viewModel.ConfirmRevertToMessageAction = _ => Task.FromResult(true);
+
+            Assert.IsTrue(viewModel.RevertToMessageCommand.CanExecute(message));
+
+            viewModel.IsAiProcessing = true;
+
+            Assert.IsFalse(viewModel.RevertToMessageCommand.CanExecute(message));
+
+            viewModel.IsAiProcessing = false;
+
+            Assert.IsTrue(viewModel.RevertToMessageCommand.CanExecute(message));
+        }
+
+        [TestMethod]
+        public void AiPanel_ReattachesConfirmationActionWhenDataContextChanges()
+        {
+            var panel = (AiAssistantPanel)RuntimeHelpers.GetUninitializedObject(typeof(AiAssistantPanel));
+            var first = new AiAssistantViewModel();
+            var second = new AiAssistantViewModel();
+            var attach = typeof(AiAssistantPanel).GetMethod(
+                "AttachViewModel",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+
+            Assert.IsNotNull(attach);
+            attach.Invoke(panel, new object[] { first });
+            Assert.IsNotNull(first.ConfirmRevertToMessageAction);
+
+            attach.Invoke(panel, new object[] { second });
+            Assert.IsNull(first.ConfirmRevertToMessageAction);
+            Assert.IsNotNull(second.ConfirmRevertToMessageAction);
+
+            attach.Invoke(panel, new object[] { null });
+            Assert.IsNull(second.ConfirmRevertToMessageAction);
+        }
+
+        [TestMethod]
+        public async Task RevertToMessage_Confirmed_RemovesTailThenRestoresPromptAndTarget()
+        {
+            var viewModel = new AiAssistantViewModel();
+            var retained = ChatMessageItem.Assistant("Keep me");
+            var target = ChatMessageItem.User("Try this prompt again");
+            var laterAssistant = ChatMessageItem.Assistant("Discard this answer");
+            var laterError = ChatMessageItem.System("Discard this error", isError: true);
+            viewModel.ChatMessages.Add(retained);
+            viewModel.ChatMessages.Add(target);
+            viewModel.ChatMessages.Add(laterAssistant);
+            viewModel.ChatMessages.Add(laterError);
+            viewModel.AiUserInput = "Existing draft";
+
+            var eventOrder = new List<string>();
+            var confirmedFollowingCount = -1;
+            var changeCount = 0;
+            viewModel.ChatMessages.CollectionChanged += (_, args) =>
+            {
+                if (args.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove)
+                    eventOrder.Add($"remove:{((ChatMessageItem)args.OldItems[0]).Content}");
+            };
+            viewModel.PropertyChanged += (_, args) =>
+            {
+                if (args.PropertyName == nameof(AiAssistantViewModel.AiUserInput))
+                    eventOrder.Add($"prompt:{viewModel.AiUserInput}");
+            };
+            viewModel.ConfirmRevertToMessageAction = followingCount =>
+            {
+                confirmedFollowingCount = followingCount;
+                Assert.AreEqual(4, viewModel.ChatMessages.Count);
+                return Task.FromResult(true);
+            };
+            viewModel.OnChatChanged = () => changeCount++;
+
+            await viewModel.RevertToMessageCommand.ExecuteAsync(target);
+
+            Assert.AreEqual(2, confirmedFollowingCount);
+            Assert.AreEqual("Try this prompt again", viewModel.AiUserInput);
+            Assert.AreEqual(1, viewModel.ChatMessages.Count);
+            Assert.AreSame(retained, viewModel.ChatMessages[0]);
+            CollectionAssert.AreEqual(
+                new[]
+                {
+                    "remove:Discard this error",
+                    "remove:Discard this answer",
+                    "prompt:Try this prompt again",
+                    "remove:Try this prompt again"
+                },
+                eventOrder);
+            Assert.AreEqual(1, changeCount);
+        }
+
+        [TestMethod]
+        public async Task RevertToMessage_Cancelled_PreservesMessagesAndDraft()
+        {
+            var viewModel = new AiAssistantViewModel();
+            var target = ChatMessageItem.User("Prompt");
+            var laterMessage = ChatMessageItem.Assistant("Answer");
+            viewModel.ChatMessages.Add(target);
+            viewModel.ChatMessages.Add(laterMessage);
+            viewModel.AiUserInput = "Keep this draft";
+            viewModel.ConfirmRevertToMessageAction = _ => Task.FromResult(false);
+
+            await viewModel.RevertToMessageCommand.ExecuteAsync(target);
+
+            Assert.AreEqual("Keep this draft", viewModel.AiUserInput);
+            Assert.AreEqual(2, viewModel.ChatMessages.Count);
+            Assert.AreSame(target, viewModel.ChatMessages[0]);
+            Assert.AreSame(laterMessage, viewModel.ChatMessages[1]);
         }
 
         [TestMethod]
@@ -381,6 +624,100 @@ namespace OpenSourceToolkit.Tests
 
             Assert.IsNotNull(provider);
             Assert.AreEqual("Custom", provider.ToString());
+        }
+
+        private static void SetField(object target, string fieldName, object value)
+        {
+            var field = target.GetType().GetField(
+                fieldName,
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.IsNotNull(field);
+            field.SetValue(target, value);
+        }
+
+        private sealed class FakeSubscriptionSessionFactory : IAiSubscriptionSessionFactory
+        {
+            private readonly IAiSubscriptionSession _session;
+
+            public FakeSubscriptionSessionFactory(IAiSubscriptionSession session)
+            {
+                _session = session;
+            }
+
+            public Task<IAiSubscriptionSession> ConnectAsync(
+                AiAccessMode mode,
+                CancellationToken cancellationToken)
+            {
+                return Task.FromResult(_session);
+            }
+        }
+
+        private sealed class FakeSubscriptionSession : IAiSubscriptionSession
+        {
+            public const string ModelId = "test-model";
+            public const string ResponseText = "Assistant response";
+
+            public int StartThreadCount { get; private set; }
+
+            public Task<AiSubscriptionAccount> GetAccountAsync(CancellationToken cancellationToken)
+            {
+                return Task.FromResult(new AiSubscriptionAccount("test@example.com", "test"));
+            }
+
+            public Task<AiSubscriptionLoginResult> LoginAsync(
+                Func<Uri, Task<bool>> openBrowser,
+                CancellationToken cancellationToken)
+            {
+                return Task.FromResult(new AiSubscriptionLoginResult(true, null));
+            }
+
+            public Task<IReadOnlyList<AiSubscriptionModel>> ListModelsAsync(
+                CancellationToken cancellationToken)
+            {
+                IReadOnlyList<AiSubscriptionModel> models = new[]
+                {
+                    new AiSubscriptionModel(ModelId, "Test model", "", true)
+                };
+                return Task.FromResult(models);
+            }
+
+            public Task<IAiSubscriptionThread> StartThreadAsync(
+                string modelId,
+                CancellationToken cancellationToken)
+            {
+                StartThreadCount++;
+                return Task.FromResult<IAiSubscriptionThread>(new FakeSubscriptionThread(modelId));
+            }
+
+            public Task LogoutAsync(CancellationToken cancellationToken)
+            {
+                return Task.CompletedTask;
+            }
+
+            public ValueTask DisposeAsync()
+            {
+                return default;
+            }
+        }
+
+        private sealed class FakeSubscriptionThread : IAiSubscriptionThread
+        {
+            public FakeSubscriptionThread(string modelId)
+            {
+                ModelId = modelId;
+            }
+
+            public string ModelId { get; }
+
+            public Task<string> RunAsync(
+                string input,
+                string reasoningEffort,
+                string serviceTier,
+                Func<string, Task> onTextDelta,
+                CancellationToken cancellationToken)
+            {
+                return Task.FromResult(FakeSubscriptionSession.ResponseText);
+            }
         }
 
         private static string FindViewPath(params string[] relativePath)

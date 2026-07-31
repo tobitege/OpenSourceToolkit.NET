@@ -82,5 +82,15 @@ namespace OpenSourceToolkit.Tests
             // Assert
             Assert.AreEqual(key, value);
         }
+
+        [TestMethod]
+        public void ToolkitLocalization_RevertToMessage_UsesGermanLabel()
+        {
+            ToolkitLocalization.SetCulture(new CultureInfo("en-US"));
+            Assert.AreEqual("Revert to", ToolkitLocalization.GetString("AiAssistant_RevertTo"));
+
+            ToolkitLocalization.SetCulture(new CultureInfo("de-DE"));
+            Assert.AreEqual("Rückgängig bis", ToolkitLocalization.GetString("AiAssistant_RevertTo"));
+        }
     }
 }

@@ -87,12 +87,6 @@ namespace OpenSourceToolkit.NET.Views
                 ?? throw new InvalidOperationException("Connection model picker was not loaded.");
         }
 
-        private void ConnectionModelPicker_GotFocus(object sender, RoutedEventArgs e)
-        {
-            if (sender is AutoCompleteBox modelPicker)
-                modelPicker.IsDropDownOpen = true;
-        }
-
         private void OpenConnectionModelList_Click(object sender, RoutedEventArgs e)
         {
             var modelPicker = GetConnectionModelPicker();

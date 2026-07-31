@@ -7,6 +7,7 @@
              xmlns:converters="using:OpenSourceToolkit.NET.Converters"
              xmlns:daisy="clr-namespace:Flowery.Controls;assembly=Flowery.NET"
              xmlns:services="clr-namespace:Flowery.Services;assembly=Flowery.NET"
+             xmlns:loc="clr-namespace:OpenSourceToolkit.NET.Localization"
              mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="500"
              x:Class="OpenSourceToolkit.NET.Views.Tools.ImageConverter.AiAssistantPanel"
              x:DataType="imgvm:AiAssistantViewModel">
@@ -36,6 +37,18 @@
                                    AutomationProperties.Name="Delete message">
                     <PathIcon Data="{StaticResource ClearIcon}"
                               Foreground="{DynamicResource DaisyErrorBrush}"
+                              Width="11"
+                              Height="11"/>
+                </daisy:DaisyButton>
+                <daisy:DaisyButton Size="ExtraSmall"
+                                   Shape="Square"
+                                   Variant="Ghost"
+                                   Command="{Binding $parent[UserControl].((imgvm:AiAssistantViewModel)DataContext).RevertToMessageCommand}"
+                                   CommandParameter="{Binding}"
+                                   ToolTip.Tip="{loc:Localize AiAssistant_RevertTo}"
+                                   AutomationProperties.Name="{loc:Localize AiAssistant_RevertTo}">
+                    <PathIcon Data="{StaticResource UndoIcon}"
+                              Foreground="{DynamicResource DaisyWarningBrush}"
                               Width="11"
                               Height="11"/>
                 </daisy:DaisyButton>

@@ -360,6 +360,7 @@ namespace OpenSourceToolkit.NET.ViewModels
                         EditShowCustomApiKey = IsEditingOpenAICompatibleConnection;
                         if (!IsEditingOpenAICompatibleConnection)
                             EditCustomEndpoint = "";
+                        EditSupportsImageGeneration = false;
                     }
                     UpdateEditAvailableModels();
                     // Select first model by default
@@ -407,10 +408,29 @@ namespace OpenSourceToolkit.NET.ViewModels
             get => _editSelectedModel;
             set
             {
-                if (SetProperty(ref _editSelectedModel, value))
-                    NotifyConnectionEditChanged();
+                var wasDetected = IsEditImageGenerationCapabilityDetected;
+                if (!SetProperty(ref _editSelectedModel, value))
+                    return;
+
+                OnPropertyChanged(nameof(IsEditImageGenerationCapabilityDetected));
+                OnPropertyChanged(nameof(CanEditImageGenerationCapability));
+                if (IsEditImageGenerationCapabilityDetected)
+                    EditSupportsImageGeneration = true;
+                else if (wasDetected)
+                    EditSupportsImageGeneration = false;
+
+                NotifyConnectionEditChanged();
             }
         }
+
+        public bool IsEditImageGenerationCapabilityDetected =>
+            !IsEditingOpenAICompatibleConnection &&
+            EditAvailableModelOptions?.Any(model =>
+                model.IsImageGeneration &&
+                string.Equals(model.ModelId, EditSelectedModel, StringComparison.OrdinalIgnoreCase)) == true;
+
+        public bool CanEditImageGenerationCapability =>
+            !IsEditImageGenerationCapabilityDetected;
 
         private string _editCustomEndpoint;
         public string EditCustomEndpoint
@@ -1262,6 +1282,8 @@ namespace OpenSourceToolkit.NET.ViewModels
                 .OrderByDescending(model => model.IsImageGeneration)
                 .ThenBy(model => model.ModelId, StringComparer.OrdinalIgnoreCase)
                 .ToList();
+            OnPropertyChanged(nameof(IsEditImageGenerationCapabilityDetected));
+            OnPropertyChanged(nameof(CanEditImageGenerationCapability));
         }
 
         #region Connection Management
@@ -1321,6 +1343,8 @@ namespace OpenSourceToolkit.NET.ViewModels
 
             UpdateEditAvailableModels();
             EditSelectedModel = SelectedConnection.ModelId;
+            if (IsEditImageGenerationCapabilityDetected)
+                EditSupportsImageGeneration = true;
 
             // Store original values for dirty tracking
             _originalConnectionName = EditConnectionName;

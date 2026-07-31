@@ -55,6 +55,9 @@
             <Setter Property="Variant" Value="Error"/>
             <Setter Property="BorderBrush" Value="{DynamicResource DaisyErrorBrush}"/>
         </Style>
+        <Style Selector="AutoCompleteBox#ConnectionModelPicker /template/ Popup#PART_Popup">
+            <Setter Property="OverlayDismissEventPassThrough" Value="True"/>
+        </Style>
     </Window.Styles>
 
     <Grid RowDefinitions="*,Auto" Margin="16">
@@ -422,7 +425,6 @@
                                                          MaxDropDownHeight="600"
                                                          IsTextCompletionEnabled="False"
                                                          ClearSelectionOnLostFocus="False"
-                                                         GotFocus="ConnectionModelPicker_GotFocus"
                                                          PlaceholderText="{loc:Localize Settings_Connections_ModelSearchWatermark}"
                                                          AutomationProperties.Name="{loc:Localize Settings_Connections_ModelSearchWatermark}"
                                                          HorizontalAlignment="Stretch">
@@ -513,6 +515,7 @@
                                         <daisy:DaisyCheckBox IsChecked="{Binding EditSupportsMultiModal}"
                                                   Content="{loc:Localize Settings_Connections_MultiModal}"/>
                                         <daisy:DaisyCheckBox IsChecked="{Binding EditSupportsImageGeneration}"
+                                                  IsEnabled="{Binding CanEditImageGenerationCapability}"
                                                   Content="{loc:Localize Settings_Connections_ImageGen}"/>
                                     </StackPanel>
 

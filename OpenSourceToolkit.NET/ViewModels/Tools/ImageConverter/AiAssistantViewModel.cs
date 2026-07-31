@@ -73,7 +73,12 @@ namespace OpenSourceToolkit.NET.ViewModels.Tools.ImageConverter
         }
 
         public bool IsImageGenerationConnection =>
-            IsApiMode && (_currentAiConnection?.SupportsImageGeneration ?? false);
+            IsApiMode &&
+            _currentConfig != null &&
+            AiConnectionConfig.ResolveImageGenerationCapability(
+                _currentConfig.ProviderType,
+                _currentConfig.ModelId,
+                _currentAiConnection?.SupportsImageGeneration ?? false);
 
         public bool IsSubscriptionMode => _currentConfig?.ProviderType == AiProviderType.Codex;
         public bool IsApiMode => !IsSubscriptionMode;
@@ -95,6 +100,7 @@ namespace OpenSourceToolkit.NET.ViewModels.Tools.ImageConverter
             OnPropertyChanged(nameof(HasMessages));
             AiChatCopyCommand?.NotifyCanExecuteChanged();
             AiChatClearCommand?.NotifyCanExecuteChanged();
+            RevertToMessageCommand?.NotifyCanExecuteChanged();
         }
 
         private string _aiUserInput = "";
@@ -118,6 +124,7 @@ namespace OpenSourceToolkit.NET.ViewModels.Tools.ImageConverter
                 {
                     SendAiMessageCommand?.NotifyCanExecuteChanged();
                     AbortAiCommand?.NotifyCanExecuteChanged();
+                    RevertToMessageCommand?.NotifyCanExecuteChanged();
                 }
             }
         }
@@ -195,6 +202,7 @@ namespace OpenSourceToolkit.NET.ViewModels.Tools.ImageConverter
         public RelayCommand AiChatClearCommand { get; }
         public AsyncRelayCommand<ChatMessageItem> CopyMessageCommand { get; }
         public RelayCommand<ChatMessageItem> DeleteMessageCommand { get; }
+        public AsyncRelayCommand<ChatMessageItem> RevertToMessageCommand { get; }
         // ═══════════════════════════════════════════════════════════════════════════
         // External Actions/Events (wired by root/view)
         // ═══════════════════════════════════════════════════════════════════════════
@@ -204,6 +212,19 @@ namespace OpenSourceToolkit.NET.ViewModels.Tools.ImageConverter
         public Action<byte[], string, string> OnImageGenerated { get; set; }
         public Action PushUndoState { get; set; }
         public Func<string, Task> CopyToClipboardAction { get; set; }
+        private Func<int, Task<bool>> _confirmRevertToMessageAction;
+        public Func<int, Task<bool>> ConfirmRevertToMessageAction
+        {
+            get => _confirmRevertToMessageAction;
+            set
+            {
+                if (_confirmRevertToMessageAction == value)
+                    return;
+
+                _confirmRevertToMessageAction = value;
+                RevertToMessageCommand?.NotifyCanExecuteChanged();
+            }
+        }
         public Action<string> ShowErrorAction { get; set; }
         public Action OnChatChanged { get; set; }
 
@@ -229,6 +250,9 @@ namespace OpenSourceToolkit.NET.ViewModels.Tools.ImageConverter
             AiChatClearCommand = new RelayCommand(ClearAiChat, () => HasMessages);
             CopyMessageCommand = new AsyncRelayCommand<ChatMessageItem>(CopyMessageToClipboardAsync);
             DeleteMessageCommand = new RelayCommand<ChatMessageItem>(DeleteMessage);
+            RevertToMessageCommand = new AsyncRelayCommand<ChatMessageItem>(
+                RevertToMessageAsync,
+                CanRevertToMessage);
 
             _aiAccessManager.StateChanged += OnAccessManagerStateChanged;
             SynchronizeAccessState();
@@ -452,8 +476,7 @@ namespace OpenSourceToolkit.NET.ViewModels.Tools.ImageConverter
                     return;
                 }
 
-                var supportsImageGen = _currentAiConnection?.SupportsImageGeneration ?? false;
-                if (supportsImageGen)
+                if (ShouldGenerateImageRequest())
                     await GenerateImageAsync(userMessage);
                 else
                     await AnalyzeImageWithAiAsync(userMessage);
@@ -461,19 +484,18 @@ namespace OpenSourceToolkit.NET.ViewModels.Tools.ImageConverter
             catch (OperationCanceledException)
             {
                 ChatMessages.Add(ChatMessageItem.System("Request cancelled.", isCancelled: true));
-                NotifyChatChanged();
             }
             catch (Exception ex)
             {
                 var message = SanitizeAuthenticationError(ex.Message);
                 ChatMessages.Add(ChatMessageItem.System(message, isError: true));
-                NotifyChatChanged();
             }
             finally
             {
                 IsAiProcessing = false;
                 _aiCts?.Dispose();
                 _aiCts = null;
+                NotifyChatChanged();
             }
         }
 
@@ -973,7 +995,50 @@ BOUNDARY: {boundary}
         private void DeleteMessage(ChatMessageItem message)
         {
             if (message != null && ChatMessages.Remove(message))
+            {
+                _aiAccessManager.ResetThread();
                 NotifyChatChanged();
+            }
+        }
+
+        private bool ShouldGenerateImageRequest()
+        {
+            return IsImageGenerationConnection;
+        }
+
+        private bool CanRevertToMessage(ChatMessageItem message)
+        {
+            return message != null &&
+                   !IsAiProcessing &&
+                   ConfirmRevertToMessageAction != null &&
+                   ChatMessages.Contains(message);
+        }
+
+        private async Task RevertToMessageAsync(ChatMessageItem message)
+        {
+            if (message == null || IsAiProcessing)
+                return;
+
+            var messageIndex = ChatMessages.IndexOf(message);
+            if (messageIndex < 0 || ConfirmRevertToMessageAction == null)
+                return;
+
+            var promptText = message.Content ?? string.Empty;
+            var followingMessageCount = ChatMessages.Count - messageIndex - 1;
+            if (!await ConfirmRevertToMessageAction(followingMessageCount) || IsAiProcessing)
+                return;
+
+            messageIndex = ChatMessages.IndexOf(message);
+            if (messageIndex < 0)
+                return;
+
+            for (var index = ChatMessages.Count - 1; index > messageIndex; index--)
+                ChatMessages.RemoveAt(index);
+
+            AiUserInput = promptText;
+            ChatMessages.RemoveAt(messageIndex);
+            _aiAccessManager.ResetThread();
+            NotifyChatChanged();
         }
 
         private void ClearAiChat()

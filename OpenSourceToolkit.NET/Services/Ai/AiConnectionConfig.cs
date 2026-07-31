@@ -247,6 +247,14 @@ namespace OpenSourceToolkit.NET.Services.Ai
             }
         }
 
+        public static bool ResolveImageGenerationCapability(
+            AiProviderType providerType,
+            string modelId,
+            bool configuredCapability)
+        {
+            return IsImageGenerationModel(providerType, modelId) || configuredCapability;
+        }
+
         internal static bool IsExcludedModel(string modelId)
         {
             return modelId.Equals("openai/gpt-5.4-image-2", StringComparison.OrdinalIgnoreCase)
