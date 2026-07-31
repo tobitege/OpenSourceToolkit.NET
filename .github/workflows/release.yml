@@ -48,7 +48,7 @@ jobs:
 
       - uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: '8.0.x'
+          global-json-file: global.json
 
       - name: Publish Desktop App (win-x64)
         shell: pwsh
