@@ -54,6 +54,8 @@
     <PackageReference Include="Avalonia.Desktop" Version="12.1.0" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.4" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.0" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.0" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.4" />
 
     <!-- Flowery.NET: Conditional reference (local project vs NuGet) -->
   </ItemGroup>
@@ -71,13 +73,13 @@
   <ItemGroup>
     <PackageReference Include="Material.Icons.Avalonia" Version="3.0.3-nightly.0.2" />
     <PackageReference Include="Avalonia.Controls.DataGrid" Version="12.1.0" />
-    <PackageReference Include="Avalonia.Diagnostics" Version="11.3.18">
+    <PackageReference Include="Avalonia.Diagnostics" Version="11.3.22">
       <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
       <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
     </PackageReference>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageReference Include="DnsClient" Version="1.8.0" />
-    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.15.0" />
+    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="15.0.0" />
     <PackageReference Include="OpenCvSharp4" Version="4.13.0.20260627" />
     <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.13.0.20260627" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.23.0" />
