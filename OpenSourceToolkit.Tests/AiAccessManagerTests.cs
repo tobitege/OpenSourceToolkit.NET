@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using LlmTornado.Codex;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json.Linq;
 using OpenSourceToolkit.NET.Services.Ai;
 
 namespace OpenSourceToolkit.Tests
@@ -164,19 +165,19 @@ namespace OpenSourceToolkit.Tests
             await manager.SwitchModeAsync(AiAccessMode.CodexOAuth);
             var deltas = new List<string>();
 
-            await manager.RunSubscriptionTurnAsync("one", delta =>
+            await manager.RunSubscriptionTurnAsync(new[] { CodexInput.Text("one") }, delta =>
             {
                 deltas.Add(delta);
                 return Task.CompletedTask;
             });
-            await manager.RunSubscriptionTurnAsync("two", _ => Task.CompletedTask);
+            await manager.RunSubscriptionTurnAsync(new[] { CodexInput.Text("two") }, _ => Task.CompletedTask);
 
             Assert.AreEqual(1, session.StartThreadCount);
             Assert.AreEqual(2, session.Thread.RunCount);
             CollectionAssert.Contains(deltas, "one");
 
             manager.SelectSubscriptionModel("second");
-            await manager.RunSubscriptionTurnAsync("three", _ => Task.CompletedTask);
+            await manager.RunSubscriptionTurnAsync(new[] { CodexInput.Text("three") }, _ => Task.CompletedTask);
 
             Assert.AreEqual(2, session.StartThreadCount);
         }
@@ -217,10 +218,29 @@ namespace OpenSourceToolkit.Tests
 
             manager.SelectSubscriptionReasoningEffort("high");
             manager.SelectSubscriptionServiceTier("priority");
-            await manager.RunSubscriptionTurnAsync("test", _ => Task.CompletedTask);
+            await manager.RunSubscriptionTurnAsync(new[] { CodexInput.Text("test") }, _ => Task.CompletedTask);
 
             Assert.AreEqual("high", session.Thread.LastReasoningEffort);
             Assert.AreEqual("priority", session.Thread.LastServiceTier);
+        }
+
+        [TestMethod]
+        public void SubscriptionModelMapping_PreservesImageInputCapability()
+        {
+            var mapModels = typeof(LlmTornadoSubscriptionSessionFactory).GetMethod(
+                "MapModels",
+                BindingFlags.NonPublic | BindingFlags.Static);
+            Assert.IsNotNull(mapModels);
+            var models = new[]
+            {
+                new CodexModel { Model = "vision", InputModalities = new List<string> { "text", "image" } },
+                new CodexModel { Model = "text", InputModalities = new List<string> { "text" } }
+            };
+
+            var mapped = (IReadOnlyList<AiSubscriptionModel>)mapModels.Invoke(null, new object[] { models });
+
+            Assert.IsTrue(mapped[0].SupportsImageInput);
+            Assert.IsFalse(mapped[1].SupportsImageInput);
         }
 
         [TestMethod]
@@ -389,7 +409,7 @@ namespace OpenSourceToolkit.Tests
             public string LastServiceTier { get; private set; }
 
             public async Task<string> RunAsync(
-                string input,
+                IReadOnlyList<CodexInput> input,
                 string reasoningEffort,
                 string serviceTier,
                 Func<string, Task> onTextDelta,
@@ -398,8 +418,14 @@ namespace OpenSourceToolkit.Tests
                 RunCount++;
                 LastReasoningEffort = reasoningEffort;
                 LastServiceTier = serviceTier;
-                await onTextDelta(input);
-                return input;
+                var message = await CodexOAuthHistoryItem.UserMessageAsync(input, cancellationToken);
+                var toJson = typeof(CodexOAuthHistoryItem).GetMethod(
+                    "ToJson", BindingFlags.Instance | BindingFlags.NonPublic);
+                Assert.IsNotNull(toJson);
+                var json = (JObject)toJson.Invoke(message, null);
+                var text = json["content"][0]["text"].Value<string>();
+                await onTextDelta(text);
+                return text;
             }
         }
 

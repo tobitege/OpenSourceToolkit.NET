@@ -13,6 +13,7 @@ using LlmTornado;
 using LlmTornado.Chat;
 using LlmTornado.Chat.Models;
 using LlmTornado.Code;
+using LlmTornado.Codex;
 using LlmTornado.Images;
 using LlmTornado.Images.Models;
 using OpenSourceToolkit.NET.Services;
@@ -68,6 +69,7 @@ namespace OpenSourceToolkit.NET.ViewModels.Tools.ImageConverter
                     OnPropertyChanged(nameof(IsApiMode));
                     OnPropertyChanged(nameof(IsSubscriptionMode));
                     OnPropertyChanged(nameof(IsImageGenerationConnection));
+                    OnPropertyChanged(nameof(SupportsImageInput));
                 }
             }
         }
@@ -83,6 +85,10 @@ namespace OpenSourceToolkit.NET.ViewModels.Tools.ImageConverter
         public bool IsSubscriptionMode => _currentConfig?.ProviderType == AiProviderType.Codex;
         public bool IsApiMode => !IsSubscriptionMode;
         public bool IsSubscriptionAuthenticated => _aiAccessManager.IsAuthenticated;
+        public bool SupportsImageInput => IsApiMode ||
+            _aiAccessManager.SubscriptionModels.Any(model =>
+                string.Equals(model.ModelId, _currentConfig.ModelId, StringComparison.Ordinal) &&
+                model.SupportsImageInput);
 
         // ═══════════════════════════════════════════════════════════════════════════
         // Chat State
@@ -472,7 +478,7 @@ namespace OpenSourceToolkit.NET.ViewModels.Tools.ImageConverter
             {
                 if (IsSubscriptionMode)
                 {
-                    await RunSubscriptionTextAsync(userMessage);
+                    await RunSubscriptionAsync(userMessage);
                     return;
                 }
 
@@ -499,19 +505,29 @@ namespace OpenSourceToolkit.NET.ViewModels.Tools.ImageConverter
             }
         }
 
-        private async Task RunSubscriptionTextAsync(string userMessage)
+        private async Task RunSubscriptionAsync(string userMessage)
         {
             if (!TrySelectConfiguredSubscriptionModel())
                 throw new InvalidOperationException("The configured Codex subscription model is not available.");
 
+            var input = new List<CodexInput> { CodexInput.Text(userMessage) };
+            var images = SendWorkspaceImage && SupportsImageInput
+                ? GetImagesForAi?.Invoke()
+                : null;
+            if (images != null)
+            {
+                foreach (var (data, mime) in images)
+                    input.Add(CodexInput.Image($"data:{mime};base64,{Convert.ToBase64String(data)}"));
+            }
+
             var aiMessage = ChatMessageItem.Assistant(string.Empty, isStreaming: true);
-            aiMessage.Footer = "Thinking...";
+            aiMessage.Footer = input.Count > 1 ? $"Analyzing {input.Count - 1} image(s)..." : "Thinking...";
             ChatMessages.Add(aiMessage);
             NotifyChatChanged();
 
             var responseText = new System.Text.StringBuilder();
             var finalResponse = await _aiAccessManager.RunSubscriptionTurnAsync(
-                userMessage,
+                input,
                 async delta =>
                 {
                     responseText.Append(delta);
@@ -577,6 +593,7 @@ namespace OpenSourceToolkit.NET.ViewModels.Tools.ImageConverter
             OnPropertyChanged(nameof(IsSubscriptionMode));
             OnPropertyChanged(nameof(IsSubscriptionAuthenticated));
             OnPropertyChanged(nameof(IsImageGenerationConnection));
+            OnPropertyChanged(nameof(SupportsImageInput));
             OnPropertyChanged(nameof(HasAiAccess));
             OnPropertyChanged(nameof(AiButtonTooltip));
             OnPropertyChanged(nameof(AiIconColor));

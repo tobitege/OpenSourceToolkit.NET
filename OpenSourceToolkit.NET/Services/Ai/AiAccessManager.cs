@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using LlmTornado.Codex;
 
 namespace OpenSourceToolkit.NET.Services.Ai
 {
@@ -231,7 +232,7 @@ namespace OpenSourceToolkit.NET.Services.Ai
         }
 
         public async Task<string> RunSubscriptionTurnAsync(
-            string input,
+            IReadOnlyList<CodexInput> input,
             Func<string, Task> onTextDelta,
             CancellationToken cancellationToken = default)
         {

@@ -7,7 +7,9 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using LlmTornado.Codex;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json.Linq;
 using OpenSourceToolkit.NET.Services;
 using OpenSourceToolkit.NET.Services.Ai;
 using OpenSourceToolkit.NET.ViewModels.Tools.ImageConverter;
@@ -308,7 +310,7 @@ namespace OpenSourceToolkit.Tests
             var session = new FakeSubscriptionSession();
             await using var manager = new AiAccessManager(new FakeSubscriptionSessionFactory(session));
             await manager.SwitchModeAsync(AiAccessMode.CodexOAuth);
-            await manager.RunSubscriptionTurnAsync("Old prompt", _ => Task.CompletedTask);
+            await manager.RunSubscriptionTurnAsync(new[] { CodexInput.Text("Old prompt") }, _ => Task.CompletedTask);
 
             var viewModel = new AiAssistantViewModel(manager);
             var deletedAnswer = ChatMessageItem.Assistant("Delete this old answer");
@@ -325,7 +327,7 @@ namespace OpenSourceToolkit.Tests
                 });
             SetField(viewModel, "_aiCts", new CancellationTokenSource());
             var runSubscription = typeof(AiAssistantViewModel).GetMethod(
-                "RunSubscriptionTextAsync",
+                "RunSubscriptionAsync",
                 BindingFlags.Instance | BindingFlags.NonPublic);
 
             Assert.IsNotNull(runSubscription);
@@ -337,6 +339,84 @@ namespace OpenSourceToolkit.Tests
             Assert.AreEqual(FakeSubscriptionSession.ResponseText, viewModel.ChatMessages[1].Content);
             Assert.IsFalse(viewModel.ChatMessages[1].IsStreaming);
             Assert.IsNull(viewModel.ChatMessages[1].Footer);
+        }
+
+        [TestMethod]
+        [DataRow(AiAccessMode.CodexOAuth, true, true, true)]
+        [DataRow(AiAccessMode.CodexAppServer, true, true, true)]
+        [DataRow(AiAccessMode.CodexOAuth, false, true, true)]
+        [DataRow(AiAccessMode.CodexAppServer, false, true, true)]
+        [DataRow(AiAccessMode.CodexOAuth, true, false, true)]
+        [DataRow(AiAccessMode.CodexAppServer, true, false, true)]
+        [DataRow(AiAccessMode.CodexOAuth, true, true, false)]
+        [DataRow(AiAccessMode.CodexAppServer, true, true, false)]
+        public async Task SubscriptionSend_RespectsImageToggleAndModelCapability(
+            AiAccessMode mode,
+            bool sendImages,
+            bool supportsImageInput,
+            bool hasImages)
+        {
+            var session = new FakeSubscriptionSession { SupportsImageInput = supportsImageInput };
+            await using var manager = new AiAccessManager(new FakeSubscriptionSessionFactory(session));
+            await manager.SwitchModeAsync(mode);
+            var viewModel = new AiAssistantViewModel(manager);
+            SetField(viewModel, "_currentConfig", new AiConnectionConfig
+            {
+                ProviderType = AiProviderType.Codex,
+                ModelId = FakeSubscriptionSession.ModelId
+            });
+            viewModel.SendWorkspaceImage = sendImages;
+            var imageReadCount = 0;
+            var pngBytes = Convert.FromBase64String(
+                "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=");
+            var gifBytes = Convert.FromBase64String("R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7");
+            viewModel.GetImagesForAi = () =>
+            {
+                imageReadCount++;
+                return hasImages
+                    ? new List<(byte[] Data, string MimeType)>
+                    {
+                        (pngBytes, "image/png"),
+                        (gifBytes, "image/gif")
+                    }
+                    : new List<(byte[] Data, string MimeType)>();
+            };
+            viewModel.AiUserInput = "Describe these images";
+            var send = typeof(AiAssistantViewModel).GetMethod(
+                "SendAiMessageAsync",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.IsNotNull(send);
+
+            await (Task)send.Invoke(viewModel, null);
+
+            Assert.AreEqual(supportsImageInput, viewModel.SupportsImageInput);
+            Assert.AreEqual(sendImages && supportsImageInput ? 1 : 0, imageReadCount);
+            Assert.IsNotNull(session.LastInput);
+            var message = await CodexOAuthHistoryItem.UserMessageAsync(session.LastInput);
+            var toJson = typeof(CodexOAuthHistoryItem).GetMethod(
+                "ToJson", BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.IsNotNull(toJson);
+            var content = ((JObject)toJson.Invoke(message, null))["content"];
+            Assert.AreEqual("input_text", content[0]["type"].Value<string>());
+            Assert.AreEqual("Describe these images", content[0]["text"].Value<string>());
+            var expectedImageCount = sendImages && supportsImageInput && hasImages ? 2 : 0;
+            Assert.AreEqual(1 + expectedImageCount, content.Count());
+            var expectedImages = new[]
+            {
+                "data:image/png;base64," + Convert.ToBase64String(pngBytes),
+                "data:image/gif;base64," + Convert.ToBase64String(gifBytes)
+            };
+            for (var index = 0; index < expectedImageCount; index++)
+            {
+                var image = content[index + 1];
+                Assert.AreEqual("input_image", image["type"].Value<string>());
+                Assert.AreEqual(expectedImages[index], image["image_url"].Value<string>());
+            }
+            Assert.AreEqual(2, viewModel.ChatMessages.Count);
+            Assert.AreEqual(FakeSubscriptionSession.ResponseText, viewModel.ChatMessages[1].Content);
+            Assert.IsFalse(viewModel.ChatMessages[1].IsStreaming);
+            Assert.IsFalse(viewModel.IsAiProcessing);
+            Assert.IsFalse(viewModel.IsImageGenerationConnection);
         }
 
         [TestMethod]
@@ -584,7 +664,7 @@ namespace OpenSourceToolkit.Tests
                 apiConnection.Parent.Attribute("IsVisible"),
                 "Configured AI connections must remain selectable in every access mode.");
             Assert.AreEqual("{Binding IsImageGenerationConnection}", (string)imageSettings.Attribute("IsVisible"));
-            Assert.AreEqual("{Binding IsApiMode}", (string)sendImage.Attribute("IsVisible"));
+            Assert.AreEqual("{Binding SupportsImageInput}", (string)sendImage.Attribute("IsVisible"));
             Assert.IsFalse(document
                 .Descendants()
                 .Any(element => element.Attributes().Any(attribute =>
@@ -658,6 +738,8 @@ namespace OpenSourceToolkit.Tests
             public const string ResponseText = "Assistant response";
 
             public int StartThreadCount { get; private set; }
+            public bool SupportsImageInput { get; set; }
+            public IReadOnlyList<CodexInput> LastInput { get; set; }
 
             public Task<AiSubscriptionAccount> GetAccountAsync(CancellationToken cancellationToken)
             {
@@ -676,7 +758,8 @@ namespace OpenSourceToolkit.Tests
             {
                 IReadOnlyList<AiSubscriptionModel> models = new[]
                 {
-                    new AiSubscriptionModel(ModelId, "Test model", "", true)
+                    new AiSubscriptionModel(ModelId, "Test model", "", true,
+                        supportsImageInput: SupportsImageInput)
                 };
                 return Task.FromResult(models);
             }
@@ -686,7 +769,7 @@ namespace OpenSourceToolkit.Tests
                 CancellationToken cancellationToken)
             {
                 StartThreadCount++;
-                return Task.FromResult<IAiSubscriptionThread>(new FakeSubscriptionThread(modelId));
+                return Task.FromResult<IAiSubscriptionThread>(new FakeSubscriptionThread(modelId, this));
             }
 
             public Task LogoutAsync(CancellationToken cancellationToken)
@@ -702,20 +785,24 @@ namespace OpenSourceToolkit.Tests
 
         private sealed class FakeSubscriptionThread : IAiSubscriptionThread
         {
-            public FakeSubscriptionThread(string modelId)
+            private readonly FakeSubscriptionSession _session;
+
+            public FakeSubscriptionThread(string modelId, FakeSubscriptionSession session)
             {
                 ModelId = modelId;
+                _session = session;
             }
 
             public string ModelId { get; }
 
             public Task<string> RunAsync(
-                string input,
+                IReadOnlyList<CodexInput> input,
                 string reasoningEffort,
                 string serviceTier,
                 Func<string, Task> onTextDelta,
                 CancellationToken cancellationToken)
             {
+                _session.LastInput = input;
                 return Task.FromResult(FakeSubscriptionSession.ResponseText);
             }
         }

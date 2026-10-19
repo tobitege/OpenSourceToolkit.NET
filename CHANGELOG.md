@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-19
+
+### Added
+
+- Added image input to the image AI assistant for Codex app-server and direct OAuth connections.
+- The image option now appears for Codex models that support image input and controls whether selected images accompany the prompt.
+
+### Changed
+
+- Updated `LlmTornado` from `3.8.65` to `3.8.76`.
+
+### Security
+
+- Updated `System.Security.Cryptography.Pkcs` from `8.0.1` to `8.0.2` to fix `CVE-2026-70162` and `CVE-2026-84008`.
+
 ## [1.0.3] - 2026-07-31
 
 ### Changed
