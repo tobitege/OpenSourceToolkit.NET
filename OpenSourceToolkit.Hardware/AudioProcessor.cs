@@ -1,4 +1,4 @@
-using NAudio.Dsp;
+﻿using NAudio.Dsp;
 using NAudio.Lame;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
@@ -16,10 +16,10 @@ namespace OpenSourceToolkit.Hardware
 
     public class AudioProcessor : IDisposable
     {
-        private WaveInEvent _waveIn;
-        private WaveInEvent _monitorWaveIn;
-        private WaveOutEvent _waveOut;
-        private WaveOutEvent _monitorWaveOut;
+        private WaveIn _waveIn;
+        private WaveIn _monitorWaveIn;
+        private WaveOut _waveOut;
+        private WaveOut _monitorWaveOut;
         private BufferedWaveProvider _monitorBuffer;
         private AudioFileReader _audioFileReader;
         private string _tempRecordingPath;
@@ -51,7 +51,7 @@ namespace OpenSourceToolkit.Hardware
 
             _tempRecordingPath = Path.Combine(Path.GetTempPath(), $"recording_{DateTime.Now.Ticks}.wav");
 
-            _waveIn = new WaveInEvent();
+            _waveIn = new WaveIn();
             _waveIn.DeviceNumber = deviceNumber;
             _waveIn.WaveFormat = new WaveFormat(44100, 16, 2);
 
@@ -97,7 +97,7 @@ namespace OpenSourceToolkit.Hardware
         {
             StopMonitoring();
 
-            _monitorWaveIn = new WaveInEvent();
+            _monitorWaveIn = new WaveIn();
             _monitorWaveIn.DeviceNumber = deviceNumber;
             _monitorWaveIn.WaveFormat = new WaveFormat(44100, 16, 2);
 
@@ -120,7 +120,7 @@ namespace OpenSourceToolkit.Hardware
                 OnVisualizationDataAvailable?.Invoke(samples);
             };
 
-            _monitorWaveOut = new WaveOutEvent();
+            _monitorWaveOut = new WaveOut { BufferMilliseconds = 150 };
             _monitorWaveOut.Init(_monitorBuffer);
             _monitorWaveOut.Play();
 
@@ -220,7 +220,7 @@ namespace OpenSourceToolkit.Hardware
 
             if (_audioFileReader == null) return;
 
-            _waveOut = new WaveOutEvent { DesiredLatency = 100 };
+            _waveOut = new WaveOut { BufferMilliseconds = 50 };
 
             ISampleProvider playbackSource;
 
@@ -300,7 +300,7 @@ namespace OpenSourceToolkit.Hardware
             {
                 var buffer = new byte[4096];
                 int bytesRead;
-                while ((bytesRead = waveProvider.Read(buffer, 0, buffer.Length)) > 0)
+                while ((bytesRead = waveProvider.Read(buffer)) > 0)
                 {
                     mp3Writer.Write(buffer, 0, bytesRead);
                 }
@@ -340,9 +340,9 @@ namespace OpenSourceToolkit.Hardware
 
         public WaveFormat WaveFormat { get; }
 
-        public int Read(float[] buffer, int offset, int count)
+        public int Read(Span<float> buffer)
         {
-            int samplesRead = _source.Read(buffer, offset, count);
+            int samplesRead = _source.Read(buffer);
 
             for (int i = 0; i < samplesRead; i++)
             {
@@ -350,7 +350,7 @@ namespace OpenSourceToolkit.Hardware
                 int channel = i % _channels;
                 if (_filters[channel] != null)
                 {
-                    buffer[offset + i] = _filters[channel].Transform(buffer[offset + i]);
+                    buffer[i] = _filters[channel].Transform(buffer[i]);
                 }
             }
             return samplesRead;
@@ -410,17 +410,17 @@ namespace OpenSourceToolkit.Hardware
             }
         }
 
-        public int Read(float[] buffer, int offset, int count)
+        public int Read(Span<float> buffer)
         {
-            int samplesRead = _source.Read(buffer, offset, count);
+            int samplesRead = _source.Read(buffer);
             for (int i = 0; i < samplesRead; i++)
             {
                 int channel = i % _channels;
-                float sample = buffer[offset + i];
+                float sample = buffer[i];
                 sample = _bassFilters[channel].Transform(sample);
                 sample = _midFilters[channel].Transform(sample);
                 sample = _trebleFilters[channel].Transform(sample);
-                buffer[offset + i] = sample;
+                buffer[i] = sample;
             }
             return samplesRead;
         }
@@ -452,9 +452,9 @@ namespace OpenSourceToolkit.Hardware
             _releaseMs = release;
         }
 
-        public int Read(float[] buffer, int offset, int count)
+        public int Read(Span<float> buffer)
         {
-            int samplesRead = _source.Read(buffer, offset, count);
+            int samplesRead = _source.Read(buffer);
             float sampleRate = WaveFormat.SampleRate;
 
             float attackCoeff = (float)Math.Exp(-1.0 / (0.001 * _attackMs * sampleRate));
@@ -463,7 +463,7 @@ namespace OpenSourceToolkit.Hardware
 
             for (int i = 0; i < samplesRead; i++)
             {
-                float sample = buffer[offset + i];
+                float sample = buffer[i];
                 float absSample = Math.Abs(sample);
 
                 // Envelope follower
@@ -481,7 +481,7 @@ namespace OpenSourceToolkit.Hardware
                     gain = (float)Math.Pow(10, gainReductionDb / 20.0);
                 }
 
-                buffer[offset + i] = sample * gain;
+                buffer[i] = sample * gain;
             }
 
             return samplesRead;
@@ -500,9 +500,9 @@ namespace OpenSourceToolkit.Hardware
 
         public WaveFormat WaveFormat => _source.WaveFormat;
 
-        public int Read(float[] buffer, int offset, int count)
+        public int Read(Span<float> buffer)
         {
-            int read = _source.Read(buffer, offset, count);
+            int read = _source.Read(buffer);
             if (read > 0)
             {
                 // Make a copy for visualization to avoid thread issues or modification
@@ -510,7 +510,7 @@ namespace OpenSourceToolkit.Hardware
                 float[] vizData = new float[read];
                 for (int i = 0; i < read; i++)
                 {
-                    float val = buffer[offset + i];
+                    float val = buffer[i];
                     // Sanity check and clamp
                     if (float.IsNaN(val) || float.IsInfinity(val)) val = 0;
                     if (val > 1.0f) val = 1.0f;

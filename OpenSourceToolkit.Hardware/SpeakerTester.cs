@@ -1,4 +1,4 @@
-using NAudio.Wave;
+﻿using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using System;
 using System.Collections.Generic;
@@ -34,7 +34,7 @@ namespace OpenSourceToolkit.Hardware
                 Type = SignalGeneratorType.Sin
             };
 
-            _waveOut = new WaveOutEvent { DeviceNumber = deviceNumber };
+            _waveOut = new WaveOut { DeviceNumber = deviceNumber, BufferMilliseconds = 150 };
 
             var tcs = new TaskCompletionSource<bool>();
             EventHandler<StoppedEventArgs> handler = null;
@@ -75,7 +75,7 @@ namespace OpenSourceToolkit.Hardware
             // For simplicity in this port, we just play a fixed tone or would need a custom ISampleProvider.
             // Just playing the start frequency for now as a placeholder for sweep logic.
 
-            _waveOut = new WaveOutEvent { DeviceNumber = deviceNumber };
+            _waveOut = new WaveOut { DeviceNumber = deviceNumber, BufferMilliseconds = 150 };
             _waveOut.Init(_signalGenerator.Take(TimeSpan.FromSeconds(durationSeconds)));
             _waveOut.Play();
         }
