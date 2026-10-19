@@ -17,10 +17,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Updated `LlmTornado` from `3.8.65` to `3.8.76`.
+- Updated all workflow actions to their latest stable releases.
 
 ### Security
 
 - Updated `System.Security.Cryptography.Pkcs` from `8.0.1` to `8.0.2` to fix `CVE-2026-70162` and `CVE-2026-84008`.
+- Enabled weekly Dependabot updates for NuGet packages and GitHub Actions.
+- Added dependency submission for resolved NuGet packages, including transitive dependencies.
 
 ## [1.0.3] - 2026-07-31
 
