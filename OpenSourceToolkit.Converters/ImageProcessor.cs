@@ -219,7 +219,7 @@ namespace OpenSourceToolkit.Converters
                 if (IsFormatIdeallyOpaque(targetFormat))
                 {
                     image.BackgroundColor = MagickColors.White;
-                    image.Alpha(AlphaOption.Remove);
+                    image.Alpha(AlphaAction.Remove);
                 }
 
                 // 13. Set Quality
@@ -861,7 +861,7 @@ namespace OpenSourceToolkit.Converters
 
                     // Flatten to remove transparency (PDFs often have transparent backgrounds)
                     page.BackgroundColor = MagickColors.White;
-                    page.Alpha(AlphaOption.Remove);
+                    page.Alpha(AlphaAction.Remove);
 
                     result.Add(page.ToByteArray());
                 }
