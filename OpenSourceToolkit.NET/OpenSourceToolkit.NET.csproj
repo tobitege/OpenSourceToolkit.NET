@@ -65,7 +65,7 @@
 
   <!-- Use NuGet package when UseLocalFlowery is false or not set -->
   <ItemGroup Condition="'$(UseLocalFlowery)' != 'true'">
-    <PackageReference Include="Flowery.NET" Version="2.2.0" />
+    <PackageReference Include="Flowery.NET" Version="3.7.0" />
   </ItemGroup>
 
   <ItemGroup>
