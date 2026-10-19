@@ -339,7 +339,7 @@
             </TextBox>
             <daisy:DaisyCheckBox Content="Send current image?" 
                                   IsChecked="{Binding SendWorkspaceImage}"
-                                  IsVisible="{Binding IsApiMode}"
+                                  IsVisible="{Binding SupportsImageInput}"
                                   ToolTip.Tip="Include workspace image with AI request"
                                   Size="Small"
                                   Margin="0,2,0,0"/>

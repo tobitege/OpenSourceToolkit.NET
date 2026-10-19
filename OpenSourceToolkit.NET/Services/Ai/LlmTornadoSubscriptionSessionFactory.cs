@@ -69,7 +69,8 @@ namespace OpenSourceToolkit.NET.Services.Ai
                             tier.Id,
                             tier.DisplayName,
                             tier.Description))
-                        .ToList()))
+                        .ToList(),
+                    model.InputModalities.Contains("image")))
                 .ToList();
         }
 
@@ -147,7 +148,7 @@ namespace OpenSourceToolkit.NET.Services.Ai
             public string ModelId => _thread.Model ?? string.Empty;
 
             public async Task<string> RunAsync(
-                string input,
+                IReadOnlyList<CodexInput> input,
                 string reasoningEffort,
                 string serviceTier,
                 Func<string, Task> onTextDelta,
@@ -240,7 +241,7 @@ namespace OpenSourceToolkit.NET.Services.Ai
             public string ModelId => _thread.Model;
 
             public async Task<string> RunAsync(
-                string input,
+                IReadOnlyList<CodexInput> input,
                 string reasoningEffort,
                 string serviceTier,
                 Func<string, Task> onTextDelta,

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using LlmTornado.Codex;
 
 namespace OpenSourceToolkit.NET.Services.Ai
 {
@@ -66,7 +67,8 @@ namespace OpenSourceToolkit.NET.Services.Ai
             string defaultReasoningEffort = null,
             IReadOnlyList<AiSubscriptionReasoningEffort> supportedReasoningEfforts = null,
             string defaultServiceTier = null,
-            IReadOnlyList<AiSubscriptionServiceTier> serviceTiers = null)
+            IReadOnlyList<AiSubscriptionServiceTier> serviceTiers = null,
+            bool supportsImageInput = false)
         {
             ModelId = modelId;
             DisplayName = displayName;
@@ -77,6 +79,7 @@ namespace OpenSourceToolkit.NET.Services.Ai
                 supportedReasoningEfforts ?? Array.Empty<AiSubscriptionReasoningEffort>();
             DefaultServiceTier = defaultServiceTier;
             ServiceTiers = serviceTiers ?? Array.Empty<AiSubscriptionServiceTier>();
+            SupportsImageInput = supportsImageInput;
         }
 
         public string ModelId { get; }
@@ -87,6 +90,7 @@ namespace OpenSourceToolkit.NET.Services.Ai
         public IReadOnlyList<AiSubscriptionReasoningEffort> SupportedReasoningEfforts { get; }
         public string DefaultServiceTier { get; }
         public IReadOnlyList<AiSubscriptionServiceTier> ServiceTiers { get; }
+        public bool SupportsImageInput { get; }
     }
 
     public sealed class AiSubscriptionReasoningEffort
@@ -136,7 +140,7 @@ namespace OpenSourceToolkit.NET.Services.Ai
         string ModelId { get; }
 
         Task<string> RunAsync(
-            string input,
+            IReadOnlyList<CodexInput> input,
             string reasoningEffort,
             string serviceTier,
             Func<string, Task> onTextDelta,
