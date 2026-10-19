@@ -6,7 +6,7 @@ updates:
     ignore:
       # PDFsharp 6.5 changes from MIT to AGPL or a commercial license.
       - dependency-name: PDFsharp
-        versions: ['[6.5.0,)']
+        versions: ['>= 6.5.0']
     schedule:
       interval: weekly
       day: monday
