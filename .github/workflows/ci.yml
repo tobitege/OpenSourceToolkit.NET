@@ -1,6 +1,6 @@
 name: CI Build
 
-# Builds pull requests and submits resolved dependencies on pushes and manual runs.
+# Builds and tests pull requests and submits resolved dependencies on pushes and manual runs.
 
 permissions:
   contents: read
@@ -26,6 +26,9 @@ jobs:
 
       - name: Build Solution
         run: dotnet build OpenSourceToolkit.Net.sln -c Release -p:UseLocalFlowery=false
+
+      - name: Test Solution
+        run: dotnet test OpenSourceToolkit.Net.sln -c Release --no-build --no-restore -p:UseLocalFlowery=false
 
   dependency-submission:
     needs: build
