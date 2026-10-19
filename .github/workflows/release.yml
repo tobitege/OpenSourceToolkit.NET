@@ -44,9 +44,9 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7.0.1
 
-      - uses: actions/setup-dotnet@v5
+      - uses: actions/setup-dotnet@v6.0.0
         with:
           global-json-file: global.json
 
@@ -70,7 +70,7 @@ jobs:
           Compress-Archive -Path ./publish/* -DestinationPath "./$artifactName.zip"
 
       - name: Upload desktop artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: OpenSourceToolkit.NET-Desktop-Windows-x64
           path: |
@@ -83,7 +83,7 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7.0.1
 
       - name: Verify version in OpenSourceToolkit.NET.csproj
         run: |
@@ -100,7 +100,7 @@ jobs:
           echo "✅ Version matches: $CSPROJ_VERSION"
 
       - name: Download all artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8.0.2
         with:
           path: ./release-artifacts
 
@@ -183,7 +183,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@v3.0.3
         with:
           tag_name: ${{ needs.validate.outputs.tag }}
           name: "v${{ needs.validate.outputs.version }}"
