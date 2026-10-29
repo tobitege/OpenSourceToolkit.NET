@@ -5,7 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.1.1] - 2026-10-29
+
+### Changed
+
+- Updated `Flowery.NET` from `3.7.0` to `3.10.0`.
+- Updated `Avalonia.Controls.DataGrid` from `12.1.0` to `12.1.2`.
+- Updated `LlmTornado` from `3.8.76` to `3.8.80`.
+- Updated `NAudio` from `3.2.0` to `3.3.0`.
+- Updated `SkiaSharp` from `4.153.1` to `4.154.0`.
+- Updated `System.Drawing.Common`, `System.Security.Cryptography.Pkcs` and `System.Security.Cryptography.ProtectedData` from `10.0.13` to `10.0.14`.
+- Updated `MSTest.TestAdapter` and `MSTest.TestFramework` from `4.3.2` to `4.5.2`.
+- Increased the application version to 1.1.1.
 
 ## [1.1.0] - 2026-10-19
 
